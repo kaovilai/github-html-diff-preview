@@ -23,6 +23,8 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  # Copilot inference with the workflow token instead of a COPILOT_GITHUB_TOKEN secret
+  copilot-requests: write
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
