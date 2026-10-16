@@ -54,6 +54,24 @@ describe("FileFetcher", () => {
         await expect(login.fetcher.fetchText(file)).rejects.toThrow(/sign in/i);
     });
 
+    it("says it is a sign-in problem when redirected to the login page, and a not-found otherwise", async () => {
+        const login = make(() => redirected("x", "https://github.com/login?return_to=x"));
+        await expect(login.fetcher.fetchText(file)).rejects.toThrow(/Not signed in to GitHub in this browser/);
+        const missing = make(() => text("", { status: 404 }));
+        await expect(missing.fetcher.fetchText(file)).rejects.toThrow(/File not found/);
+    });
+
+    it("only throttling statuses pause later requests", async () => {
+        const weird = make(() => text("", { status: 404, headers: { "retry-after": "120" } }));
+        await expect(weird.fetcher.fetchText(file)).rejects.toThrow();
+        await expect(weird.fetcher.fetchText(file)).rejects.toThrow(/File not found/);
+        expect(weird.calls).toHaveLength(2);
+        const busy = make(() => text("", { status: 503, headers: { "retry-after": "5" } }));
+        await expect(busy.fetcher.fetchText(file)).rejects.toThrow();
+        await expect(busy.fetcher.fetchText(file)).rejects.toThrow(/retry in/);
+        expect(busy.calls).toHaveLength(1);
+    });
+
     it("tells the user to sign in when the file is not found", async () => {
         const { fetcher } = make(() => text("", { status: 404 }));
         await expect(fetcher.fetchText(file)).rejects.toThrow(/private, sign in to github\.com/);

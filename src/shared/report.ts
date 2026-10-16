@@ -11,8 +11,9 @@ const TEMPLATES: { [kind in ReportKind]: { file: string; prefix: string; criteri
     other: { file: "bug_report.yml", prefix: "[bug]", criteria: "- It works as expected" }
 };
 
-// Prefilled values travel in the address, which GitHub limits to roughly 8 KB; keep every field short.
-const LIMITS = { urls: 1500, actual: 800, probe: 400, title: 100 };
+// Prefilled values travel percent-encoded in the address, which GitHub limits to roughly 8 KB. Limits count encoded
+// characters, because non-ASCII text and newlines expand to several each.
+const LIMITS = { urls: 2400, actual: 1200, probe: 600, title: 240 };
 
 export interface ReportInput {
     kind: ReportKind;
@@ -24,7 +25,13 @@ export interface ReportInput {
     version: string;
 }
 
-const clip = (value: string, max: number): string => value.length > max ? `${value.slice(0, max - 1)}…` : value;
+const clip = (value: string, maxEncoded: number): string => {
+    if (encodeURIComponent(value).length <= maxEncoded) return value;
+    // trim by whole characters (not code units) until the ellipsis fits too
+    const characters = Array.from(value);
+    while (characters.length && encodeURIComponent(characters.join("") + "…").length > maxEncoded) characters.pop();
+    return characters.join("") + "…";
+}
 
 export const issueUrl = (input: ReportInput): string => {
     const template = TEMPLATES[input.kind];

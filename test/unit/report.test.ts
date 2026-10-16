@@ -31,6 +31,17 @@ describe("issueUrl", () => {
         expect(url).not.toMatch(/token|authorization|secret/i);
     });
 
+    it("keeps non-ASCII and multi-line text within the address budget", () => {
+        const cjk = "文件".repeat(2000);
+        const lines = "line\n".repeat(4000);
+        const url = issueUrl({ ...base, kind: "access", urls: cjk, error: cjk, probe: lines });
+        expect(url.length).toBeLessThan(7000);
+        const parsed = new URL(url);
+        expect(parsed.searchParams.get("urls")!.endsWith("…")).toBe(true);
+        // never cuts a character in half
+        expect(parsed.searchParams.get("urls")).not.toMatch(/\uFFFD/);
+    });
+
     it("uses what the user confirmed, verbatim, and a placeholder when there is no error", () => {
         const url = new URL(issueUrl({ ...base, kind: "render", urls: "  https://github.com/o/PRIVATE/blob/main/a.html \n(file: a.html)  " }));
         expect(url.searchParams.get("urls")).toBe("https://github.com/o/PRIVATE/blob/main/a.html \n(file: a.html)");

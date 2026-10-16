@@ -72,7 +72,9 @@ export class FileFetcher {
         }
     }
 
+    // Only throttling responses pause us; an unrelated error that happens to carry Retry-After must not block everything.
     private noteRateLimit(response: Response): void {
+        if (![403, 429, 503].includes(response.status)) return;
         const retryAfter = Number(response.headers.get("retry-after"));
         if (retryAfter > 0) this.blockedUntil = this.deps.now() + retryAfter * 1000;
         else if (response.status === 429) this.blockedUntil = this.deps.now() + DEFAULT_BACKOFF_MS;
@@ -134,9 +136,8 @@ export class FileFetcher {
     }
 
     private describe(error: FetchError): string {
-        if (error.status === 401 || error.status === 404) {
-            return "File not found. If the repository is private, sign in to github.com in this browser first.";
-        }
+        if (error.status === 401) return "Not signed in to GitHub in this browser. Sign in at github.com and try again.";
+        if (error.status === 404) return "File not found. If the repository is private, sign in to github.com in this browser first.";
         if (error.status === 429 || error.status === 403) return `GitHub refused the request (rate limit or missing access). ${error.message}`;
         return `Could not fetch the file from GitHub. ${error.message}`;
     }

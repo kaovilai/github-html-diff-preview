@@ -41,7 +41,13 @@ const fetchAsset = async (file: FileRef): Promise<string | undefined> => {
 const probe = async (url: string) => {
     const parsed = new URL(url);
     if (parsed.hostname !== "github.com") throw new Error("Not a github.com URL.");
-    const match = /^\/([^/]+)\/([^/]+)\/blob\/(.+)$/.exec(decodeURIComponent(parsed.pathname));
+    let pathname: string;
+    try {
+        pathname = decodeURIComponent(parsed.pathname);
+    } catch {
+        throw new Error("That address contains an invalid percent-escape.");
+    }
+    const match = /^\/([^/]+)\/([^/]+)\/blob\/(.+)$/.exec(pathname);
     if (!match) throw new Error("Expected a github.com/<owner>/<repo>/blob/<ref>/<path> URL.");
     const [, owner, repo, rest] = match;
     let first: { ref: string; path: string; outcomes: Awaited<ReturnType<FileFetcher["probe"]>> } | undefined;

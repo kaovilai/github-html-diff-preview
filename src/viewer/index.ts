@@ -1,6 +1,7 @@
 import { runBlob } from "./blob";
 import { runDiff } from "./diff";
 import { byId } from "./common";
+import { encodePath } from "../core/github-urls";
 import { initReport, showError } from "./report";
 
 const params = new URLSearchParams(location.hash.replace(/^#/, ""));
@@ -18,7 +19,7 @@ const sourcePage = (): { pageUrl: string; probeUrl?: string } => {
     const owner = params.get("owner"), repo = params.get("repo");
     if (!owner || !repo) return { pageUrl: "" };
     if (params.get("kind") === "blob") {
-        const url = `https://github.com/${owner}/${repo}/blob/${params.get("rest") ?? ""}`;
+        const url = `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/blob/${encodePath(params.get("rest") ?? "")}`;
         return { pageUrl: url, probeUrl: url };
     }
     const range = params.get("range");
@@ -26,7 +27,7 @@ const sourcePage = (): { pageUrl: string; probeUrl?: string } => {
     const after = params.get("after"), path = params.get("path");
     return {
         pageUrl: `${page}\n(file: ${path ?? ""})`,
-        probeUrl: after && path ? `https://github.com/${owner}/${repo}/blob/${after}/${path}` : undefined
+        probeUrl: after && path ? `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/blob/${encodeURIComponent(after)}/${encodePath(path)}` : undefined
     };
 }
 

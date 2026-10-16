@@ -83,6 +83,9 @@ export const initReport = (initial: ReportState) => {
             });
             await chrome.tabs.create({ url });
             dialog.close();
+        } catch (error) {
+            // the dialog stays open so the user can retry or copy the address by hand
+            byId("report-error").textContent = `Could not open the issue form: ${error instanceof Error ? error.message : String(error)}`;
         } finally {
             open.disabled = false;
         }
