@@ -56,9 +56,6 @@
             "sandbox/frame.html"
         ]
     },
-    "content_security_policy": {
-        "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: blob: data:; object-src 'none'"
-    },
     "commands": {
         "preview": {
             "suggested_key": {

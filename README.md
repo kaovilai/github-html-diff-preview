@@ -25,7 +25,7 @@ A browser extension that previews HTML files on GitHub and shows **rendered befo
 ![Inline diff with additions and a removal bubble](docs/screenshots/2-inline-green-additions-red-bubble.png)
 ![Side by side](docs/screenshots/3-side-by-side.png)
 
-**Scripts are off by default.** Repository HTML is untrusted, and running its JavaScript would also disturb the diff highlighting. Single-file previews have an explicit, labelled **Run scripts (untrusted)** toggle (Chrome only); scripts then run in a manifest sandbox page with an opaque origin: no access to GitHub, your cookies, or the extension's APIs. Diffs never run scripts.
+**Scripts are off by default.** Repository HTML is untrusted, and running its JavaScript would also disturb the diff highlighting. Single-file previews have an explicit, labelled **Run scripts (untrusted)** toggle (Chrome only); scripts then run in a manifest sandbox page with an opaque origin: no access to GitHub, your cookies, or the extension's APIs. The sandbox keeps Chrome's default policy, so inline scripts run but scripts loaded from other sites (CDNs) are blocked. Diffs never run scripts.
 
 ## Install
 
@@ -109,7 +109,7 @@ The end-to-end tests run Chromium with the unpacked extension against a fake `gi
 
 Source layout: `src/background` (worker), `src/content` (GitHub page integration), `src/viewer` (preview page), `src/options`, `src/sandbox` (opt-in scripts page), `src/core` (diffing, sanitizing, fetching; unit tested).
 
-Store listing material is in [`store/`](store/). Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md); to report one, see [docs/REPORTING.md](docs/REPORTING.md) (issue forms ask for a URL and acceptance criteria that the issue helper turns into tests).
+Store listing text is in [CHROMEWEBSTORE.md](CHROMEWEBSTORE.md), images and publishing steps in [`store/`](store/). Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md); to report one, see [docs/REPORTING.md](docs/REPORTING.md) (issue forms ask for a URL and acceptance criteria that the issue helper turns into tests).
 
 ### Automation
 

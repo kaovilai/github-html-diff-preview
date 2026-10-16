@@ -62,7 +62,7 @@ test.describe("single file preview", () => {
         await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("Hello");
     });
 
-    test("opt-in script mode can load a CDN script, but the default mode never requests it", async ({ context }) => {
+    test("script mode runs inline scripts but does not load remote scripts", async ({ context }) => {
         await fakeGithub(context, { files: { "main/cdn.html": '<body><p id="p">static</p><script src="https://cdn.example.test/lib.js"></script></body>' } });
         let cdnRequests = 0;
         await context.route("https://cdn.example.test/**", route => {
@@ -75,8 +75,11 @@ test.describe("single file preview", () => {
         await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("static");
         expect(cdnRequests).toBe(0);
 
+        // the sandbox page keeps Chrome's default CSP: inline scripts run, remote script sources are blocked
         await viewer.locator("#run-scripts").check();
-        await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("cdn ran");
+        await expect(viewer.locator("#script-warning")).toBeVisible();
+        await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("static");
+        expect(cdnRequests).toBe(0);
     });
 
     test("resolves branch names that contain slashes", async ({ context }) => {
