@@ -13,6 +13,10 @@ updates:
   - package-ecosystem: npm
     directory: /
     patterns: ["*"]
+    # typescript-eslint's peer range stops below TypeScript 6.1; lift this once it supports newer majors
+    ignore:
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     multi-ecosystem-group: all
 
   - package-ecosystem: github-actions
