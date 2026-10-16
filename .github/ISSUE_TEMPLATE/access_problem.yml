@@ -1,11 +1,11 @@
-name: Cannot load a file or diff (private repository, token, rate limit)
+name: Cannot load a file or diff (private repository, sign-in, rate limit)
 description: The preview says the file was not found, access was denied, or a rate limit was hit
 title: "[access] "
 body:
   - type: markdown
     attributes:
       value: |
-        Run **Test access** on the extension's options page with the file's URL first and paste its output below; it shows which fetch methods work and contains no secrets.
+        The extension's **Report a problem** button fills most of this in for you. Otherwise run **Test access** on the options page with the file's URL and paste its output below; it shows whether this browser's GitHub sign-in can read the file and contains no secrets.
   - type: textarea
     id: urls
     attributes:
@@ -27,17 +27,11 @@ body:
       options: ["No", "Yes", "Not sure"]
     validations:
       required: true
-  - type: dropdown
-    id: token
-    attributes:
-      label: Did you configure a personal access token?
-      options: ["No", "Yes, fine-grained", "Yes, classic", Not sure]
-    validations:
-      required: true
   - type: textarea
     id: probe
     attributes:
       label: Output of "Test access"
+      description: Whether this browser's GitHub sign-in can read the file. Contains no secrets.
       render: text
     validations:
       required: true

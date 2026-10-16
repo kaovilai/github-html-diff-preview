@@ -1,11 +1,25 @@
-import { assertRepo, assertValid, isSha } from "./github-urls";
-import type { FileFetcher } from "./fetcher";
-import type { FileChange, PrDiffInfo, PrInfoRequest } from "../shared/messages";
-import type { Settings } from "./settings";
+// Developer tool only (the extension itself never calls the REST API): finds the two commits a pull request compares
+// and its changed files, for `npm run repro -- pr`. Runs in CI with GITHUB_TOKEN or locally with GH_TOKEN.
 
+import { assertRepo, assertValid, isSha } from "../../src/core/github-urls";
+import type { FileChange } from "../../src/shared/messages";
+
+export interface PrInfoRequest {
+    owner: string;
+    repo: string;
+    pr: number;
+    range?: string;
+}
+
+export interface PrDiffInfo {
+    before: string | null;
+    after: string;
+    files: { [path: string]: FileChange };
+}
+
+const API = "https://api.github.com";
 const PAGE_SIZE = 100;
 const MAX_PAGES = 30;
-const CACHE_TTL_MS = 60 * 1000;
 
 interface ApiFile { filename: string; status: string; previous_filename?: string }
 interface Compare { files?: ApiFile[]; merge_base_commit?: { sha: string } }
@@ -19,23 +33,14 @@ const toFileMap = (files: ApiFile[]): { [path: string]: FileChange } => {
 }
 
 export class PrInfoLoader {
-    private cache = new Map<string, { at: number; info: Promise<PrDiffInfo> }>();
-
-    constructor(private fetcher: FileFetcher, private getSettings: () => Promise<Settings>, private now: () => number = Date.now) {}
-
-    get(req: PrInfoRequest): Promise<PrDiffInfo> {
-        const key = `${req.owner}/${req.repo}#${req.pr}@${req.range ?? ""}`;
-        const cached = this.cache.get(key);
-        if (cached && this.now() - cached.at < CACHE_TTL_MS) return cached.info;
-
-        const info = this.load(req);
-        this.cache.set(key, { at: this.now(), info });
-        info.catch(() => this.cache.delete(key));
-        return info;
-    }
+    constructor(private deps: { fetch: typeof fetch; token?: string }) {}
 
     private async json<T>(path: string): Promise<T> {
-        return await this.fetcher.apiJson(path, await this.getSettings()) as T;
+        const headers: { [name: string]: string } = { "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+        if (this.deps.token) headers["Authorization"] = `Bearer ${this.deps.token}`;
+        const response = await this.deps.fetch(`${API}${path}`, { headers });
+        if (!response.ok) throw new Error(`GitHub API request failed (HTTP ${response.status}) for ${path}.`);
+        return response.json() as Promise<T>;
     }
 
     // `first` is page 1 when the caller already fetched it, so it is not requested twice.
@@ -51,7 +56,7 @@ export class PrInfoLoader {
         return files;
     }
 
-    private async load({ owner, repo, pr, range }: PrInfoRequest): Promise<PrDiffInfo> {
+    async get({ owner, repo, pr, range }: PrInfoRequest): Promise<PrDiffInfo> {
         assertRepo(owner, repo);
         assertValid(Number.isInteger(pr) && pr > 0, "pull request number");
         const repoPath = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
@@ -62,7 +67,6 @@ export class PrInfoLoader {
             const comparePath = `${repoPath}/compare/${from}...${to}`;
             const first = await this.json<Compare>(`${comparePath}?per_page=${PAGE_SIZE}&page=1`);
             const files = await this.listFiles<Compare>(comparePath, json => json.files, first);
-            // the file list is a three-dot compare, so "before" must be the merge base for the two to agree
             return { before: first.merge_base_commit?.sha ?? from, after: to, files: toFileMap(files) };
         }
 
@@ -75,13 +79,11 @@ export class PrInfoLoader {
         }
 
         const pull = await this.json<Pull>(`${repoPath}/pulls/${pr}`);
-        const baseSha = pull.base.sha;
-        const headSha = pull.head.sha;
         const [comparison, files] = await Promise.all([
-            this.json<Compare>(`${repoPath}/compare/${baseSha}...${headSha}?per_page=1`),
+            this.json<Compare>(`${repoPath}/compare/${pull.base.sha}...${pull.head.sha}?per_page=1`),
             this.listFiles<ApiFile[]>(`${repoPath}/pulls/${pr}/files`, json => json)
         ]);
         // GitHub's PR diff is taken against the merge base, not the base branch tip
-        return { before: comparison.merge_base_commit?.sha ?? baseSha, after: headSha, files: toFileMap(files) };
+        return { before: comparison.merge_base_commit?.sha ?? pull.base.sha, after: pull.head.sha, files: toFileMap(files) };
     }
 }

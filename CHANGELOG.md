@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Removed the GitHub REST API fallback and the personal access token option. The extension now only reads, through the browser's own GitHub sign-in (`/raw/...`, plus the page's own data and `.diff`), so nothing is stored and `api.github.com` is never contacted.
+- Dropped the `storage` and `https://api.github.com/*` permissions; the chosen diff layout is remembered in the preview page's own storage.
+- Added **Report a problem**: opens a prefilled GitHub issue form (address you confirm and edit, the error shown, browser and extension version) that you review and submit yourself.
+- The options page keeps only the access test.
+
 ## 0.1.0 (unreleased)
 
 Initial release.

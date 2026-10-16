@@ -1,4 +1,4 @@
-import { chromium, expect, test as base, type BrowserContext, type Page, type Route } from "@playwright/test";
+import { chromium, expect, test as base, type BrowserContext, type Page } from "@playwright/test";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -16,7 +16,7 @@ export interface FakePull {
     head: string;
     mergeBase: string;
     files: { filename: string; status: string; previous_filename?: string }[];
-    // what GitHub's own diff view requests when the page loads (`/diffs/<before>..<after>`); omitted = page shows nothing useful
+    // what GitHub's own diff view requests when the page loads (`/diffs/<before>..<after>`); omitted = the page tells us nothing
     pageDiffs?: { before: string; after: string };
 }
 
@@ -85,7 +85,6 @@ ${refName ? `<script type="application/json" data-target="react-app.embeddedData
 // Serves just enough of github.com, raw files and api.github.com for the extension to work, without a network.
 export const fakeGithub = async (context: BrowserContext, repo: FakeRepo, owner = "o", name = "r") => {
     const requests: string[] = [];
-    const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
     await context.route(`https://github.com/${owner}/${name}/**`, route => {
         const url = new URL(route.request().url());
@@ -120,22 +119,10 @@ export const fakeGithub = async (context: BrowserContext, repo: FakeRepo, owner 
         return route.fulfill({ status: 404, body: "" });
     });
 
-    await context.route(`https://api.github.com/repos/${owner}/${name}/**`, route => {
-        const url = new URL(route.request().url());
-        requests.push(`api:${url.pathname}`);
-        const prefix = `/repos/${owner}/${name}`;
-        for (const [number, pr] of Object.entries(repo.pulls ?? {})) {
-            if (url.pathname === `${prefix}/pulls/${number}/files`) return json(route, pr.files);
-            if (url.pathname === `${prefix}/pulls/${number}`) return json(route, { base: { sha: pr.base }, head: { sha: pr.head } });
-            if (url.pathname.startsWith(`${prefix}/compare/`)) return json(route, { merge_base_commit: { sha: pr.mergeBase }, files: pr.files });
-        }
-        const contents = new RegExp(`^${prefix}/contents/(.+)$`).exec(url.pathname);
-        if (contents) {
-            const key = `${url.searchParams.get("ref")}/${decodeURIComponent(contents[1])}`;
-            const body = repo.files[key];
-            return body === undefined ? json(route, { message: "Not Found" }, 404) : route.fulfill({ status: 200, contentType: "text/plain", body });
-        }
-        return json(route, { message: "Not Found" }, 404);
+    // the extension never calls the REST API: any request to it fails loudly
+    await context.route("https://api.github.com/**", route => {
+        requests.push(`api:${new URL(route.request().url()).pathname}`);
+        return route.fulfill({ status: 500, body: "the extension must not use the REST API" });
     });
 
     return { requests };

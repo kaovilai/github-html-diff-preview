@@ -6,12 +6,10 @@
     "description": "Preview HTML files on GitHub and see rendered before/after diffs in pull requests. Runs entirely in your browser.",
     "minimum_chrome_version": "112",
     "permissions": [
-        "storage",
         "contextMenus"
     ],
     "host_permissions": [
         "https://github.com/*",
-        "https://api.github.com/*",
         "https://raw.githubusercontent.com/*"
     ],
     "icons": {

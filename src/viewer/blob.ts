@@ -1,6 +1,7 @@
 import { send, type ResolvedBlob } from "../shared/messages";
 import { getScriptPaths, loadScripts, rewriteUrls, serializeDocument } from "../core/html-prepare";
-import { byId, fetchText, prepareSide, showError, STATIC_SANDBOX } from "./common";
+import { byId, fetchText, prepareSide, STATIC_SANDBOX } from "./common";
+import { showError } from "./report";
 
 const SCRIPT_SANDBOX = "allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals";
 
@@ -73,7 +74,7 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
     };
 
     toggle.addEventListener("change", () => {
-        render().catch(error => showError(error instanceof Error ? error.message : String(error)));
+        render().catch(showError);
     });
     await render();
 }

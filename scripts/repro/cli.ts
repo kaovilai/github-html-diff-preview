@@ -3,21 +3,19 @@
 //   file ./page.html [--path dir/page.html]     the same for a local file (relative assets are looked up in --repo)
 //   diff <before.html> <after.html>             diff two local files
 //   pr <github pull request url> <file path>    diff one file of a public pull request
-// Options: --out <dir> writes before/after/inline views and report.json. GITHUB_TOKEN or GH_TOKEN is used for API calls.
+// Options: --out <dir> writes before/after/inline views and report.json. GITHUB_TOKEN or GH_TOKEN is used for the pull request lookup (the extension itself never calls the REST API).
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { FileFetcher } from "../../src/core/fetcher";
 import { parseBlobPath, refCandidates } from "../../src/core/github-urls";
-import { PrInfoLoader } from "../../src/core/pr-info";
-import type { Settings } from "../../src/core/settings";
+import { PrInfoLoader } from "./pr-info";
 import { analyzeDiff, prepareSide, type DiffReport, type Fetchers, type Loc, type Parse } from "./lib";
 
 const parse: Parse = html => new JSDOM(html).window.document;
 
 const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
-const settings: Settings = { token, authMode: "auto", viewMode: "inline" };
-const fetcher = new FileFetcher({ fetch: (input, init) => fetch(input, init), getSettings: async () => settings, now: Date.now });
+const fetcher = new FileFetcher({ fetch: (input, init) => fetch(input, init), now: Date.now });
 
 const remote = (owner: string, repo: string): Fetchers => ({
     text: (filePath, ref) => fetcher.fetchText({ owner, repo, ref, path: filePath }),
@@ -99,7 +97,7 @@ const main = async () => {
         const match = /^\/([^/]+)\/([^/]+)\/pull\/(\d+)/.exec(new URL(url).pathname);
         if (!match || !filePath) throw new Error("Usage: pr <https://github.com/o/r/pull/N/files> <path of the HTML file>");
         const [, owner, repo, number] = match;
-        const info = await new PrInfoLoader(fetcher, async () => settings).get({ owner, repo, pr: Number(number) });
+        const info = await new PrInfoLoader({ fetch: (input, init) => fetch(input, init), token }).get({ owner, repo, pr: Number(number) });
         const change = info.files[filePath];
         if (!change) throw new Error(`${filePath} is not part of pull request #${number}. Files: ${Object.keys(info.files).join(", ")}`);
         const fetchers = remote(owner, repo);

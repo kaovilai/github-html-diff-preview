@@ -45,13 +45,6 @@ export const prepareSide = async (side: Side, options: Omit<SanitizeOptions, "sc
     return { ctx: { ...base, assetUrl: path => assets.get(path) }, makeDocument };
 }
 
-export const showError = (message: string) => {
-    const status = byId("status");
-    status.className = "error";
-    status.textContent = message;
-    status.hidden = false;
-}
-
 export const showNotice = (text: string) => {
     const notice = byId("notice");
     notice.textContent = text;

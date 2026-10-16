@@ -34,7 +34,7 @@ HOW TO USE IT
 3. In a pull request, switch between Inline and Side by side, and step through the changes with the arrow buttons.
 
 LOCAL AND PRIVATE BY DESIGN
-No hosted preview site, no proxy, no account, no analytics. Files go from GitHub straight to your browser and nowhere else. Private repositories work through the GitHub sign-in already in your browser. An optional fine-grained access token, kept only on your device, is a fallback if GitHub's page ever stops exposing what the diff needs.
+No hosted preview site, no proxy, no account, no analytics. Files go from GitHub straight to your browser and nowhere else. Private repositories work through the GitHub sign-in already in your browser, read-only, with no token to store and no GitHub API. If something cannot be read, a "Report a problem" button opens a prefilled GitHub issue form that you review and submit yourself.
 Previewed pages are untrusted, so they are shown in a sandboxed frame with scripts turned off. An explicit "Run scripts (untrusted)" switch for single files is available if you want it.
 
 SUPPORT
@@ -77,14 +77,12 @@ Regenerate with `npm run build && npm run store-assets` (renders the real UI aga
 
 | Permission | Type | Justification |
 |------------|------|---------------|
-| `storage` | permissions | Saves the user's preferences (inline vs side-by-side view, access mode) and an optional GitHub token the user chooses to enter. Stored locally with chrome.storage.local; never synced. The token is sent only to api.github.com. |
 | `contextMenus` | permissions | Adds a "Preview HTML file" right-click entry on GitHub pages and on links to .html files. |
-| `https://github.com/*` | host_permissions | A content script adds the Preview buttons to GitHub file and pull request pages. The extension also fetches the file the user asked to preview from github.com/<owner>/<repo>/raw/..., using the user's existing GitHub sign-in so private repositories they can access also work, and reads the pull request's own file status from github.com's .diff view. |
-| `https://api.github.com/*` | host_permissions | Fallback only: reads pull request metadata (changed files, merge base and head commit) and file contents through the REST API when the GitHub page does not expose them, or when the user has configured a token. |
+| `https://github.com/*` | host_permissions | A content script adds the Preview buttons to GitHub file and pull request pages. The extension also reads (read-only) the file the user asked to preview from github.com/<owner>/<repo>/raw/..., using the user's existing GitHub sign-in so private repositories they can access also work, and reads the pull request's own file status from github.com's .diff view. Nothing is uploaded. |
 | `https://raw.githubusercontent.com/*` | host_permissions | github.com raw-file requests redirect here (with a short-lived token for private repositories). Access is needed for the redirected download to complete. |
 | Sandbox page (`sandbox` manifest key) | n/a | Used only for the optional, off-by-default "Run scripts (untrusted)" mode of single-file previews. The previewed file's own scripts run in an opaque-origin sandbox page under Chrome's default sandbox policy, with no access to extension APIs, GitHub pages or cookies. Remote script sources are blocked. The extension never loads or runs any code of its own from a remote location. |
 
-No `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` permission is requested.
+No `storage`, `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` permission is requested, and the GitHub API (`api.github.com`) is never used.
 
 **Remote code:** answer "No, I am not using remote code."
 
@@ -92,21 +90,21 @@ No `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` perm
 
 ### Data Collection
 
-**Does the extension collect user data?** Only the optional authentication token, locally.
+**Does the extension collect user data?** No. There is no token, account, analytics or storage of GitHub content. Requests are read-only and go only to github.com and raw.githubusercontent.com, for the files the user asked to preview.
 
 | Data Type | Collected? | Transmitted Off-Device? | Purpose | Shared with Third Parties? |
 |-----------|-----------|------------------------|---------|---------------------------|
 | Personally identifiable info | No | No | n/a | No |
 | Health info | No | No | n/a | No |
 | Financial info | No | No | n/a | No |
-| Authentication info | Yes, only if the user enters a personal access token | Only to api.github.com, in the Authorization header of API requests | Read pull request data and files the user asked to preview | No |
+| Authentication info | No (the browser's own GitHub sign-in is used by the browser; the extension cannot read it and stores nothing) | No | n/a | No |
 | Personal communications | No | No | n/a | No |
 | Location | No | No | n/a | No |
 | Web history | No | No | n/a | No |
 | User activity | No | No | n/a | No |
-| Website content | No (file contents are processed locally and shown to the user) | Requests go only to GitHub for the files the user asked to preview | Core feature | No |
+| Website content | No (file contents are processed locally and shown to the user) | Read-only requests go only to GitHub for the files the user asked to preview | Core feature | No |
 
-Check only **Authentication information** in the dashboard form.
+Check **no** data-type boxes in the dashboard form.
 
 ### Data Use Certification
 - [x] Data is NOT sold to third parties
@@ -143,6 +141,7 @@ https://github.com/kaovilai/github-html-diff-preview
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
+| 0.2.0 | 2026-10-16 | Removes the GitHub API fallback and the token option (read-only raw fetching through the browser's sign-in only), drops the `storage` and `api.github.com` permissions, and adds "Report a problem" (prefilled GitHub issue form the user submits). | Draft, not submitted |
 | 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Submitted 2026-10-16, pending review (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`); set to publish automatically after review |
 
 ## Review Notes
@@ -155,7 +154,7 @@ No sign-in needed. 1) Open https://github.com/redhat-et/pricetag-metering/blob/m
 ### Known Issues / Limitations
 - Only `<body>` is diffed; changes confined to `<head>` show "No visible changes".
 - GitHub's page markup can change; the right-click entry and the shortcut do not depend on it.
-- Private repository access: verified 2026-10-16 in a real signed-in Chromium browser against a private repository's HTML file. The extension fetched it through the browser's GitHub sign-in (the Test access probe reported `session` OK with the file's exact size, `anonymous` 404, no token configured) and rendered it. A private-repository *pull request diff* has not been tried on a real private repository (it uses the same sign-in for the file contents and the `.diff` status, and the page for the commits).
+- Private repository access: verified 2026-10-16 (version 0.1.0 code path, unchanged in 0.2.0) in a real signed-in Chromium browser against a private repository's HTML file: the file was read through the browser's GitHub sign-in with no token and rendered. A private-repository *pull request diff* has not been tried on a real private repository (it uses the same sign-in for the file contents and the `.diff` status, and the page for the commits).
 
 ### Rejection History
 None yet.

@@ -9,7 +9,7 @@ const BASE = "a".repeat(40), HEAD = "b".repeat(40), MERGE_BASE = "c".repeat(40);
 
 const repo = {
     files: { [`${MERGE_BASE}/docs/a.html`]: BEFORE, [`${HEAD}/docs/a.html`]: AFTER },
-    pulls: { 5: { base: BASE, head: HEAD, mergeBase: MERGE_BASE, files: [{ filename: "docs/a.html", status: "modified" }, { filename: "notes.md", status: "modified" }] } }
+    pulls: { 5: { base: BASE, head: HEAD, mergeBase: MERGE_BASE, pageDiffs: { before: MERGE_BASE, after: HEAD }, files: [{ filename: "docs/a.html", status: "modified" }, { filename: "notes.md", status: "modified" }] } }
 };
 
 test("PR diff preview highlights additions, removals and changes", async ({ context }) => {
@@ -38,6 +38,7 @@ test("PR diff preview highlights additions, removals and changes", async ({ cont
     // the file list came from the PR API, the contents from the merge base and the head commit
     expect(gh.requests).toContain(`/o/r/raw/${MERGE_BASE}/docs/a.html`);
     expect(gh.requests).toContain(`/o/r/raw/${HEAD}/docs/a.html`);
+    expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
 });
 
 test("only HTML files get a Preview button", async ({ context }) => {
@@ -93,13 +94,65 @@ test.describe("commits taken from GitHub's own page", () => {
         expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
     });
 
-    test("an explicit commit range in the address must agree with the page, otherwise the API is used", async ({ context }) => {
+    test("an explicit commit range in the address must agree with the page, otherwise the user can report it", async ({ context }) => {
         const gh = await fakeGithub(context, { files: { [`${MERGE_BASE}/docs/a.html`]: BEFORE, [`${HEAD}/docs/a.html`]: AFTER }, pulls: { 5: { ...pull({ files: [{ filename: "docs/a.html", status: "modified" }] }), pageDiffs: { before: "1".repeat(40), after: "2".repeat(40) } } } });
         const page = await context.newPage();
         // the URL asks for a..b but the page reports unrelated commits: not trusted
         await page.goto(`https://github.com/o/r/pull/5/changes/${MERGE_BASE}..${HEAD}`);
         await page.getByRole("button", { name: "Preview" }).click();
-        await expect(page.frameLocator('iframe[title^="HTML diff preview"]').locator("#stats")).toContainText("added");
-        expect(gh.requests.some(request => request.startsWith("api:"))).toBe(true);
+        const panel = page.frameLocator('iframe[title^="HTML diff preview"]');
+        await expect(panel.locator("#status.error")).toContainText("did not say which commits");
+        expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
+    });
+});
+
+test.describe("reporting a problem", () => {
+    test("the dialog is prefilled, editable, and opens a GitHub issue form the user submits themselves", async ({ context, extensionId }) => {
+        await fakeGithub(context, { files: {} });
+        const viewer = await context.newPage();
+        await viewer.goto(`chrome-extension://${extensionId}/viewer/viewer.html#kind=blob&owner=o&repo=r&rest=main%2Fnope.html`);
+        await expect(viewer.locator("#status.error")).toContainText("File not found");
+
+        await viewer.locator("#report-from-error").click();
+        const dialog = viewer.locator("#report-dialog");
+        await expect(dialog).toBeVisible();
+        // a failed load is classified as an access problem, and the address is the GitHub page that failed
+        await expect(viewer.locator("#report-kind")).toHaveValue("access");
+        await expect(viewer.locator("#report-urls")).toHaveValue("https://github.com/o/r/blob/main/nope.html");
+        // capture what the extension would open instead of leaving the test machine: the form is only opened, never submitted
+        await viewer.evaluate(() => {
+            const w = window as unknown as { __opened: string[] };
+            w.__opened = [];
+            chrome.tabs.create = (async (options: chrome.tabs.CreateProperties) => { w.__opened.push(String(options.url)); return {} as chrome.tabs.Tab; }) as typeof chrome.tabs.create;
+        });
+        expect(await viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened)).toEqual([]);
+
+        // the user edits what is shared; the confirmed text is what goes into the form
+        await viewer.locator("#report-urls").fill("https://github.com/o/PRIVATE/blob/main/nope.html");
+        await viewer.locator("#report-open").click();
+        await expect.poll(() => viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened.length)).toBe(1);
+        const url = new URL(await viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened[0]));
+        expect(url.origin + url.pathname).toBe("https://github.com/kaovilai/github-html-diff-preview/issues/new");
+        expect(url.searchParams.get("template")).toBe("access_problem.yml");
+        expect(url.searchParams.get("urls")).toBe("https://github.com/o/PRIVATE/blob/main/nope.html");
+        expect(url.searchParams.get("actual")).toContain("File not found");
+        expect(url.searchParams.get("probe")).toContain("FAIL session");
+        expect(url.searchParams.get("version")).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(url.searchParams.get("browser")).toMatch(/Chrome/);
+        // no token or other secret is ever included
+        expect(url.search).not.toMatch(/token|secret|authorization/i);
+    });
+
+    test("cancel sends nothing, and the always-visible button works without an error", async ({ context }) => {
+        const gh = await fakeGithub(context, { files: { "main/a.html": "<body><p>ok</p></body>" } });
+        const page = await context.newPage();
+        await page.goto("https://github.com/o/r/blob/main/a.html");
+        const [viewer] = await Promise.all([context.waitForEvent("page"), page.locator("[data-hp-blob-button]").click()]);
+        await expect(viewer.frameLocator("iframe").locator("p")).toHaveText("ok");
+        await viewer.locator("#report").click();
+        await expect(viewer.locator("#report-kind")).toHaveValue("render");
+        await viewer.locator("#report-cancel").click();
+        await expect(viewer.locator("#report-dialog")).toBeHidden();
+        expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
     });
 });

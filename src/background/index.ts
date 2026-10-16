@@ -1,19 +1,16 @@
 import { FileFetcher, FetchError } from "../core/fetcher";
-import { PrInfoLoader } from "../core/pr-info";
 import { assetMime, DEFAULT_BUDGET, toDataUrl } from "../core/assets";
 import { assertRef, assertRepo, assertRepoPath, parseBlobPath, refCandidates } from "../core/github-urls";
-import { loadSettings } from "../core/settings";
 import type { FileRef, Request, Response, ResolvedBlob } from "../shared/messages";
 import { viewerUrl } from "../shared/viewer-url";
 
-const fetcher = new FileFetcher({ fetch: (input, init) => fetch(input, init), getSettings: loadSettings, now: Date.now });
-const prInfo = new PrInfoLoader(fetcher, loadSettings);
+const fetcher = new FileFetcher({ fetch: (input, init) => fetch(input, init), now: Date.now });
 
 const MENU_PAGE = "preview-page";
 const MENU_LINK = "preview-link";
 
-// Only the extension's own pages may read file contents through the worker (it can attach the user's GitHub session
-// or token); content scripts on github.com may only ask it to open a preview tab.
+// Only the extension's own pages may read file contents through the worker (it attaches the user's GitHub session);
+// content scripts on github.com may only ask it to open a preview tab.
 const isOwnPage = (sender: chrome.runtime.MessageSender): boolean => {
     const url = sender.url ?? "";
     return sender.id === chrome.runtime.id && (url.startsWith(chrome.runtime.getURL("viewer/viewer.html")) || url.startsWith(chrome.runtime.getURL("options/options.html")));
@@ -76,8 +73,6 @@ const handle = async (request: Request, sender: chrome.runtime.MessageSender): P
             assertRef(request.ref);
             assertRepoPath(request.path);
             return fetchAsset(request);
-        case "pr-info":
-            return prInfo.get(request);
         case "pr-file-entry":
             return fetcher.fetchDiffEntry(request.owner, request.repo, request.before, request.after, request.path);
         case "probe":

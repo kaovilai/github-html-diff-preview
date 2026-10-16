@@ -11,18 +11,17 @@ Start with the options page (toolbar icon, or `chrome://extensions` then *Detail
 
 ## "File not found" or a blank preview for a private repository
 
-1. Make sure you are signed in to github.com in the same browser profile and can open the file normally.
-2. Open the options page and run **Test access** with the file's URL. Read the lines:
-   - `OK session`: the browser login works; the preview should work.
-   - `FAIL session ... Not signed in`: sign in to github.com in this profile (SSO/organization authorization applies).
-   - `OK token` / `FAIL token`: whether the optional personal access token can read the file.
-3. A fine-grained token needs read-only **Contents** (and **Pull requests** for the pull request fallback) on that repository.
+1. Make sure you are signed in to github.com in the same browser profile and can open the file normally. The extension reads with that sign-in; it has no token of its own.
+2. Open the options page and run **Test access** with the file's URL:
+   - `OK session`: the sign-in reaches the file; the preview should work.
+   - `FAIL session ... sign in` or `File not found`: sign in to github.com in this profile (SSO and organization authorization apply), or the address is wrong.
+3. Still failing? Use **Report a problem** in the preview; it prefills an issue form for you to review and submit.
 
 ## A pull request diff does not load
 
-- The commits being compared are read from GitHub's own page. Reload the **Files changed** tab and click Preview again after the page has finished loading.
-- If the page does not expose them, the extension falls back to the GitHub API: public repositories work anonymously (60 requests per hour), private repositories need a token (see above).
-- "Rate limit" in the message means GitHub told the extension to back off; wait the stated time or add a token.
+- The commits being compared are read from GitHub's own page. Reload the **Files changed** tab, wait for the diff to appear, and click Preview again.
+- If the page still does not tell the extension which commits it compares (GitHub may have changed its page), the preview says so; use **Report a problem**. The right-click entry on an `.html` file page is unaffected.
+- A message about GitHub asking for a pause means GitHub rate-limited the request; wait the stated time.
 - Only `<body>` is compared. A change that only touches `<head>` (title, meta tags) shows "No visible changes".
 
 ## Styles, images or fonts are missing

@@ -1,12 +1,5 @@
 // Messages between extension pages / content scripts and the background worker.
 
-export interface PrInfoRequest {
-    owner: string;
-    repo: string;
-    pr: number;
-    range?: string;
-}
-
 export interface FileRef {
     owner: string;
     repo: string;
@@ -18,7 +11,6 @@ export type Request =
     | { type: "resolve-blob"; owner: string; repo: string; rest: string; ref?: string }
     | ({ type: "file-text" } & FileRef)
     | ({ type: "asset" } & FileRef)
-    | ({ type: "pr-info" } & PrInfoRequest)
     | { type: "pr-file-entry"; owner: string; repo: string; before: string; after: string; path: string }
     | { type: "probe"; url: string }
     | { type: "open-preview"; owner: string; repo: string; rest: string; ref?: string };
@@ -34,12 +26,6 @@ export interface ResolvedBlob {
 export interface FileChange {
     status: string;
     previous?: string;
-}
-
-export interface PrDiffInfo {
-    before: string | null;
-    after: string;
-    files: { [path: string]: FileChange };
 }
 
 export type ProbeOutcome = { strategy: string; ok: boolean; detail: string };

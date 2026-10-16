@@ -79,6 +79,17 @@ test.describe("WCAG 2.2 AA", () => {
             await expectNoViolations(page);
         });
 
+        test(`report dialog (open) has no violations and its buttons have enough contrast, ${scheme}`, async ({ context }) => {
+            await fakeGithub(context, repo);
+            const page = await openViewerDiff(context, scheme);
+            await page.locator("#report").click();
+            await expect(page.locator("#report-dialog")).toBeVisible();
+            await expectNoViolations(page);
+            for (const report of await measureControls(page, "#report-dialog button")) {
+                expect(report.ratio, report.text).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+            }
+        });
+
         test(`options page has no violations, ${scheme}`, async ({ context }) => {
             await fakeGithub(context, repo);
             await expectNoViolations(await openOptions(context, scheme));
@@ -100,7 +111,8 @@ test.describe("every button: text contrast in every state", () => {
         test(`viewer buttons, ${scheme}`, async ({ context }) => {
             await fakeGithub(context, repo);
             const page = await openViewerDiff(context, scheme);
-            const buttons = page.locator("button");
+            // only buttons the user can see (the report dialog's are inside a closed <dialog>)
+            const buttons = page.locator("button:visible");
             const count = await buttons.count();
             expect(count).toBeGreaterThanOrEqual(4);
 
@@ -125,7 +137,7 @@ test.describe("every button: text contrast in every state", () => {
         test(`options buttons, ${scheme}`, async ({ context }) => {
             await fakeGithub(context, repo);
             const page = await openOptions(context, scheme);
-            const buttons = page.locator("button");
+            const buttons = page.locator("button:visible");
             for (let i = 0; i < await buttons.count(); i++) {
                 await buttons.nth(i).hover();
                 for (const report of await measureControls(page, "button:hover")) expect(report.ratio, `${report.text} hover`).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
@@ -224,6 +236,24 @@ test.describe("mobile and touch", () => {
         const nav = page.locator("#next");
         await nav.tap();
         await expect(nav).toBeVisible();
+    });
+
+    test("the report dialog is usable by touch: 44px controls, fits the screen, tap opens the form", async ({ mobileContext }) => {
+        await fakeGithub(mobileContext, repo);
+        const page = await openViewerDiff(mobileContext, "light");
+        await page.locator("#report").tap();
+        const dialog = page.locator("#report-dialog");
+        await expect(dialog).toBeVisible();
+        const sizes = await page.evaluate(min => {
+            const box = (el: Element) => el.getBoundingClientRect();
+            const dialogBox = box(document.getElementById("report-dialog")!);
+            const controls = Array.from(document.querySelectorAll<HTMLElement>("#report-dialog button, #report-dialog select, #report-dialog textarea"))
+                .map(el => ({ id: el.id, w: Math.round(box(el).width), h: Math.round(box(el).height) }))
+                .filter(c => (c.id !== "report-urls") && (c.w < min || c.h < min));
+            return { fits: dialogBox.left >= 0 && dialogBox.right <= window.innerWidth, small: controls };
+        }, MIN_TOUCH_TARGET);
+        expect(sizes.fits).toBe(true);
+        expect(sizes.small).toEqual([]);
     });
 
     test("the removal bubble's touch target is large without growing on screen", async ({ mobileContext }) => {

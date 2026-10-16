@@ -10,7 +10,6 @@ label { display: block; font-weight: 600; margin: 8px 0 4px; }
 input, select { width: 100%; box-sizing: border-box; padding: 6px 8px; font: inherit; }
 .row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 button { padding: 5px 12px; font: inherit; cursor: pointer; }
-#saved { color: light-dark(#1a7f37, #56d364); }
 pre { padding: 8px; background: color-mix(in srgb, CanvasText 8%, Canvas); overflow: auto; white-space: pre-wrap; }
 code { font-family: ui-monospace, Menlo, monospace; }
 

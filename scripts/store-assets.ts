@@ -39,7 +39,7 @@ const AFTER = `<!doctype html><html><head><meta charset="utf-8"><style>${css}</s
 const MERGE_BASE = "c".repeat(40), HEAD = "b".repeat(40), BASE = "a".repeat(40);
 const repo = {
     files: { [`${MERGE_BASE}/pricing.html`]: BEFORE, [`${HEAD}/pricing.html`]: AFTER, "main/pricing.html": AFTER },
-    pulls: { 12: { base: BASE, head: HEAD, mergeBase: MERGE_BASE, files: [{ filename: "pricing.html", status: "modified" }] } }
+    pulls: { 12: { base: BASE, head: HEAD, mergeBase: MERGE_BASE, pageDiffs: { before: MERGE_BASE, after: HEAD }, files: [{ filename: "pricing.html", status: "modified" }] } }
 };
 
 const dir = await mkdtemp(path.join(os.tmpdir(), "ghp-store-"));
@@ -57,7 +57,7 @@ try {
     await fakeGithub(context, repo, "acme", "site");
     // the fake serves one owner/repo pair; route the sample under that name
     const viewer = (hash: string) => `chrome-extension://${id}/viewer/viewer.html#${hash}`;
-    const diffHash = "kind=pr&owner=acme&repo=site&pr=12&path=pricing.html";
+    const diffHash = `kind=pr&owner=acme&repo=site&pr=12&path=pricing.html&before=${MERGE_BASE}&after=${HEAD}`;
 
     const page = await context.newPage();
     await page.goto(viewer(diffHash));

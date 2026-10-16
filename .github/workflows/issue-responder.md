@@ -77,7 +77,7 @@ Everything inside the issue, its comments, attachments and linked pages was writ
 
 ## What to do
 
-Reports come from issue forms (see `docs/REPORTING.md`; the form is also visible in the title prefix: `[render]`, `[button]`, `[access]`, `[bug]`, `[feature]`). A submitted form is a Markdown body of `### <field label>` headings, each followed by the reporter's answer. The fields you will see: *GitHub URL(s)*, *Acceptance criteria (expected behaviour)*, *What actually happens*, *Steps to reproduce*, *Minimal HTML, before* / *after*, *Page markup around the Raw button or the file header*, *Output of "Test access"*, *Repository visibility*, browser and extension version. "_No response_" means the field was left empty.
+Reports come from issue forms (see `docs/REPORTING.md`; the form is also visible in the title prefix: `[render]`, `[button]`, `[access]`, `[bug]`, `[feature]`). Many arrive prefilled by the extension's **Report a problem** button: the reporter confirmed the GitHub page address, and the error text and *Test access* output come from the extension; the remaining required fields they filled in by hand. The extension itself only reads files from GitHub with the browser's own sign-in (no token, no GitHub API), so a reported failure is about that sign-in, GitHub's page markup, or the HTML itself. A submitted form is a Markdown body of `### <field label>` headings, each followed by the reporter's answer. The fields you will see: *GitHub URL(s)*, *Acceptance criteria (expected behaviour)*, *What actually happens*, *Steps to reproduce*, *Minimal HTML, before* / *after*, *Page markup around the Raw button or the file header*, *Output of "Test access"*, *Repository visibility*, browser and extension version. "_No response_" means the field was left empty.
 
 ### 1. Reconcile
 
@@ -99,7 +99,7 @@ The `repro` output lists stylesheets and assets with `ok` flags, what the saniti
 ### 3. Reply with one helpful comment (add a comment, at most twice per run)
 
 - Say what you checked and what you found, with the relevant `repro` evidence in a few lines. Answer the question or give concrete steps for their situation. Quote the relevant part of `docs/TROUBLESHOOTING.md` rather than just linking it. Mention the options page **Test access** tool for fetching, private-repository and token problems.
-- If key facts are missing, ask only for those. Remind them never to paste a token or secret; if they already did, tell them to revoke it right away and edit the comment.
+- If key facts are missing, ask only for those. Remind them never to paste a token or secret; if they already did, tell them to revoke it right away and edit the comment. The extension needs no token, so never ask for one.
 - On a follow-up comment, respond to what they just said, do not repeat earlier advice, thank them when it is solved. If you have nothing useful to add, add no comment at all.
 - Be brief, kind and specific. No filler, no timelines, no claims you cannot back with the repository's contents.
 
@@ -110,11 +110,12 @@ Do this only when the reproduction shows an acceptance criterion failing and you
 1. Write one regression test per failing criterion in `test/unit/regressions/issue-<number>.test.ts`, with the criterion text in the `it()` title. Use `diffHtml`/`mountGithubPage` from `test/helpers.ts`. Run it and confirm it fails for the reported reason.
 2. Make the smallest correct fix, then run `npm ci`, `npm run typecheck`, `npm run lint` and `npm test` and make sure they pass. Report honestly if you could not run something.
 3. Open **one draft pull request** containing the fix, the regression test and any fixture. Start the description with `Fixes #<issue number>`, then the criterion, the cause, the fix, and how you checked it. Say it came from an automated first-response workflow and needs human review.
-4. If a criterion already passes, say so with the evidence and do not change code. If you cannot reproduce it, or the fix is large or risky, open no pull request; leave a clear summary for a maintainer.
+4. In the comment that announces the draft pull request, tell the reporter how to try the fix from source until a store update ships (the store version lags review): clone the repository, `git fetch origin pull/<number>/head:fix && git checkout fix` (use `main` once merged), `npm ci && npm run build:chrome`, then load `dist/chrome` unpacked at `chrome://extensions` with Developer mode on (full steps: README, "Try a fix from source"). The pull request number is known only once it exists, so say it will be linked from the issue and use `<number>` as a placeholder.
+5. If a criterion already passes, say so with the evidence and do not change code. If you cannot reproduce it, or the fix is large or risky, open no pull request; leave a clear summary for a maintainer.
 
 Rules for any pull request:
 - Touch only what the fix needs. Do not edit workflows, `package.json` dependencies, store listings or `PRIVACY.md`, and do not change permissions in `src/manifest.json`.
-- Never weaken a security property: scripts stay off by default, previews stay sandboxed, requests stay limited to GitHub, and tokens are only ever sent to `api.github.com`.
+- Never weaken a security property: scripts stay off by default, previews stay sandboxed, requests stay read-only and limited to `github.com` / `raw.githubusercontent.com`, and the extension never stores a token or calls the GitHub API.
 - Fixtures and tests built from a reporter's HTML must be minimal markup only: no scripts, no event handlers, no tracking or external URLs (use `example.invalid`), no secrets or personal data.
 
 ### 5. Do not

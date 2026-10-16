@@ -1,6 +1,6 @@
-import { send, type FileChange, type PrDiffInfo } from "../shared/messages";
+import { send, type FileChange } from "../shared/messages";
 import { isSha } from "../core/github-urls";
-import { loadSettings, saveSettings, type ViewMode } from "../core/settings";
+import { loadViewMode, saveViewMode, type ViewMode } from "./view-mode";
 import { buildViews, type Side as SideName, type Views } from "../core/html-diff";
 import { rewriteUrls } from "../core/html-prepare";
 import { byId, fetchText, prepareSide, showNotice, STATIC_SANDBOX, type PreparedSide } from "./common";
@@ -13,7 +13,7 @@ interface DiffParams {
     pr: number;
     path: string;
     range?: string;
-    // the commits GitHub's own page is showing (read by the content script); without them the REST API is asked
+    // the commits GitHub's own page is showing, read by the content script
     before?: string;
     after?: string;
 }
@@ -63,15 +63,12 @@ interface Resolved {
     change?: FileChange;
 }
 
-const resolve = async ({ owner, repo, pr, path, range, before, after }: DiffParams): Promise<Resolved> => {
-    if (before && after && isSha(before) && isSha(after)) {
-        const change = await send<FileChange | null>({ type: "pr-file-entry", owner, repo, before, after, path });
-        return { before, after, change: change ?? undefined };
+const resolve = async ({ owner, repo, path, before, after }: DiffParams): Promise<Resolved> => {
+    if (!before || !after || !isSha(before) || !isSha(after)) {
+        throw new Error("This page did not say which commits the pull request compares, so there is nothing to preview. Reload the Files changed tab and try again; if it keeps happening GitHub may have changed its page.");
     }
-    const info = await send<PrDiffInfo>({ type: "pr-info", owner, repo, pr, range });
-    const change = info.files[path];
-    if (!change) throw new Error(`${path} is not part of this diff.`);
-    return { before: info.before, after: info.after, change };
+    const change = await send<FileChange | null>({ type: "pr-file-entry", owner, repo, before, after, path });
+    return { before, after, change: change ?? undefined };
 }
 
 export const runDiff = async (params: DiffParams) => {
@@ -149,7 +146,7 @@ export const runDiff = async (params: DiffParams) => {
         beforePane.hidden = afterPane.hidden = mode !== "split";
         byId("mode-inline").classList.toggle("active", mode === "inline");
         byId("mode-split").classList.toggle("active", mode === "split");
-        void saveSettings({ viewMode: mode });
+        saveViewMode(mode);
     };
     byId("mode-inline").onclick = () => applyMode("inline");
     byId("mode-split").onclick = () => applyMode("split");
@@ -174,6 +171,6 @@ export const runDiff = async (params: DiffParams) => {
     byId("prev").onclick = () => step(-1);
     byId("next").onclick = () => step(1);
 
-    applyMode((await loadSettings()).viewMode);
+    applyMode(loadViewMode());
     byId("status").hidden = true;
 }

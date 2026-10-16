@@ -32,7 +32,27 @@
                 <input id="run-scripts" type="checkbox"> Run scripts (untrusted)
             </label>
         </div>
+        <button id="report" class="seg" type="button" title="Open a prefilled issue form on GitHub">Report a problem</button>
     </header>
+    <dialog id="report-dialog" aria-labelledby="report-title">
+        <form method="dialog" id="report-form">
+            <h2 id="report-title">Report a problem</h2>
+            <p>This opens a new issue form on GitHub with the details below filled in. You review it and press Submit yourself; nothing is sent from here. Issues are public, so remove anything private (such as a private repository&rsquo;s name) from the address first.</p>
+            <label for="report-kind">What went wrong?</label>
+            <select id="report-kind">
+                <option value="access">The page could not be loaded (not found, access, rate limit)</option>
+                <option value="render">The preview or diff looks wrong</option>
+                <option value="other">Something else</option>
+            </select>
+            <label for="report-urls">GitHub page address (edit or remove anything private)</label>
+            <textarea id="report-urls" rows="3"></textarea>
+            <p id="report-error" class="muted"></p>
+            <div class="actions">
+                <button id="report-cancel" class="seg" type="button">Cancel</button>
+                <button id="report-open" class="seg primary" type="button">Open prefilled issue on GitHub</button>
+            </div>
+        </form>
+    </dialog>
     <div id="script-warning" hidden>Scripts are running in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows. Only use this on files you trust.</div>
     <div id="notice" hidden></div>
     <main id="stage"><div id="status">Loading&hellip;</div></main>

@@ -1,26 +1,21 @@
 import { expect, fakeGithub, test } from "./fixtures";
 
-test("options store the token locally and the access test reports each method", async ({ context, extensionId }) => {
-    await fakeGithub(context, { files: { "main/a.html": "<p>x</p>" } });
+test("the options page has nothing to configure and its access test reports whether the browser's sign-in reaches a file", async ({ context, extensionId }) => {
+    const gh = await fakeGithub(context, { files: { "main/a.html": "<p>x</p>" } });
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/options/options.html`);
 
-    await page.locator("#token").fill("github_pat_example");
-    await page.locator("#save").click();
-    await expect(page.locator("#saved")).toHaveText("Saved");
-    await page.reload();
-    await expect(page.locator("#token")).toHaveValue("github_pat_example");
+    // no token field, no mode picker
+    await expect(page.locator("input[type=password], #token, #authMode")).toHaveCount(0);
 
     await page.locator("#probe-url").fill("https://github.com/o/r/blob/main/a.html");
     await page.locator("#probe").click();
-    const result = page.locator("#probe-result");
-    await expect(result).toContainText("OK   session");
-    await expect(result).toContainText("token");
-    await expect(result).toContainText("anonymous");
+    await expect(page.locator("#probe-result")).toContainText("OK   session");
 
-    await page.locator("#clear").click();
-    await page.reload();
-    await expect(page.locator("#token")).toHaveValue("");
+    await page.locator("#probe-url").fill("https://github.com/o/r/blob/main/missing.html");
+    await page.locator("#probe").click();
+    await expect(page.locator("#probe-result")).toContainText("FAIL session");
+    expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
 });
 
 test("the viewer explains itself when opened without a file", async ({ context, extensionId }) => {

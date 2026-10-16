@@ -1,6 +1,7 @@
 import { runBlob } from "./blob";
 import { runDiff } from "./diff";
-import { byId, showError } from "./common";
+import { byId } from "./common";
+import { initReport, showError } from "./report";
 
 const params = new URLSearchParams(location.hash.replace(/^#/, ""));
 const theme = params.get("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
@@ -10,6 +11,23 @@ const required = (name: string): string => {
     const value = params.get(name);
     if (!value) throw new Error(`Missing "${name}" in the preview address.`);
     return value;
+}
+
+// The GitHub page this preview came from: what a report should point at.
+const sourcePage = (): { pageUrl: string; probeUrl?: string } => {
+    const owner = params.get("owner"), repo = params.get("repo");
+    if (!owner || !repo) return { pageUrl: "" };
+    if (params.get("kind") === "blob") {
+        const url = `https://github.com/${owner}/${repo}/blob/${params.get("rest") ?? ""}`;
+        return { pageUrl: url, probeUrl: url };
+    }
+    const range = params.get("range");
+    const page = `https://github.com/${owner}/${repo}/pull/${params.get("pr") ?? ""}/changes${range ? `/${range}` : ""}`;
+    const after = params.get("after"), path = params.get("path");
+    return {
+        pageUrl: `${page}\n(file: ${path ?? ""})`,
+        probeUrl: after && path ? `https://github.com/${owner}/${repo}/blob/${after}/${path}` : undefined
+    };
 }
 
 const run = async () => {
@@ -22,5 +40,6 @@ const run = async () => {
     }
 }
 
+initReport(sourcePage());
 byId("status").textContent = "Loading…";
-run().catch(error => showError(error instanceof Error ? error.message : String(error)));
+run().catch(showError);

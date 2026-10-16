@@ -31,7 +31,7 @@ Review risks to expect, and the fallback for each:
 
 1. **Sandbox page** (`sandbox/frame.html`, used by the opt-in "Run scripts" mode). It keeps Chrome's default sandbox CSP (inline scripts and eval allowed, remote script sources blocked), so no remote code is loaded. If a reviewer still objects, remove the `sandbox` key and the scripts toggle; the rest does not depend on them.
 2. **Name containing "GitHub"**. Fallback name in `CHROMEWEBSTORE.md`.
-3. **Host permissions** are limited to three GitHub origins, each justified in `CHROMEWEBSTORE.md`.
+3. **Host permissions** are limited to two GitHub origins (github.com and raw.githubusercontent.com), each justified in `CHROMEWEBSTORE.md`; there are no API or storage permissions.
 
 ## Microsoft Edge Add-ons
 

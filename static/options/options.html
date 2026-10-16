@@ -9,40 +9,15 @@
 <body>
     <main>
         <h1>GitHub HTML Diff Preview</h1>
-        <p class="lead">Everything runs in your browser. Files are fetched directly from GitHub; nothing is sent anywhere else.</p>
+        <p class="lead">Everything runs in your browser. Files are read from GitHub with the sign-in already in this browser; nothing is sent anywhere else. There is nothing to configure and no token to store.</p>
 
         <section>
-            <h2>How files are fetched</h2>
-            <label for="authMode">Access mode</label>
-            <select id="authMode">
-                <option value="auto">Automatic (browser login, then token, then anonymous)</option>
-                <option value="session">Browser login to github.com only</option>
-                <option value="token">Personal access token only</option>
-                <option value="anonymous">Anonymous (public repositories only)</option>
-            </select>
+            <h2>How it reads files</h2>
             <p class="hint">
-                <strong>Browser login</strong> reuses the GitHub session already in this browser, so private repositories
-                work without storing anything. File content and images/fonts/CSS use this.
-                <strong>Pull request diffs</strong> normally need nothing more: the compared commits are read from the GitHub
-                page itself. A token below is only a fallback, for when the page does not expose them.
+                The extension only reads: it requests a file's <em>Raw</em> address on github.com, using your existing GitHub sign-in, so
+                private repositories you can open work and public ones work signed out. It never uploads anything and never uses the
+                GitHub API. For a pull request, the two commits being compared are read from the GitHub page you are on.
             </p>
-        </section>
-
-        <section>
-            <h2>Personal access token (optional fallback)</h2>
-            <label for="token">Token</label>
-            <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
-            <p class="hint">
-                Stored only in this browser (<code>chrome.storage.local</code>) and sent only to <code>api.github.com</code>.
-                Use a
-                <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a>
-                limited to the repositories you need, with read-only <em>Contents</em> and <em>Pull requests</em> permissions.
-            </p>
-            <div class="row">
-                <button id="save" type="button">Save</button>
-                <button id="clear" type="button">Remove token</button>
-                <span id="saved" role="status"></span>
-            </div>
         </section>
 
         <section>
@@ -51,7 +26,16 @@
             <input id="probe-url" type="url" placeholder="https://github.com/owner/repo/blob/main/index.html">
             <div class="row"><button id="probe" type="button">Test</button></div>
             <pre id="probe-result" hidden></pre>
-            <p class="hint">Tries each method separately so you can see which ones work for that file.</p>
+            <p class="hint">Shows whether this browser's GitHub sign-in can read that file.</p>
+        </section>
+
+        <section>
+            <h2>Something not working?</h2>
+            <p class="hint">
+                Use <strong>Report a problem</strong> in the preview: it opens a prefilled issue form on GitHub that you review and submit
+                yourself. Or read the
+                <a href="https://github.com/kaovilai/github-html-diff-preview/blob/main/docs/TROUBLESHOOTING.md" target="_blank" rel="noopener noreferrer">troubleshooting guide</a>.
+            </p>
         </section>
     </main>
     <script src="../options.js"></script>

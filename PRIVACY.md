@@ -4,10 +4,11 @@
 
 ## What the extension does with data
 
-- **GitHub content.** When you click Preview (or use the context menu or keyboard shortcut), the extension requests the HTML file you chose, plus the stylesheets, images and fonts it references and, for pull request diffs, the status of the file in the diff. The two commits a pull request diff compares are read from the GitHub page you are already viewing; if the page does not expose them, the extension asks the GitHub API for the pull request's file list and commits. These requests go only to `github.com`, `api.github.com` and `raw.githubusercontent.com`. The content is processed in your browser and shown to you; it is not stored and not sent anywhere else.
+- **GitHub content.** When you click Preview (or use the context menu or keyboard shortcut), the extension requests, read-only, the HTML file you chose, plus the stylesheets, images and fonts it references and, for pull request diffs, the status of the file in the diff. The two commits a pull request diff compares are read from the GitHub page you are already viewing. These requests go only to `github.com` and `raw.githubusercontent.com`. The content is processed in your browser and shown to you; it is not stored and not sent anywhere else.
 - **Your GitHub login.** For private repositories the extension makes requests to `github.com` that carry your browser's existing GitHub session cookies, exactly as if you had opened the file's *Raw* link. The extension cannot read those cookies and does not store or transmit them.
-- **Personal access token (optional).** If you add one in the options page, it is kept in `chrome.storage.local` on your device (it is not synced) and sent only to `api.github.com`, in the `Authorization` header of API requests. You can remove it at any time from the options page.
-- **Settings.** Your view mode (inline / side by side) and access mode are stored locally.
+- **No token, no account.** The extension has no sign-in of its own and stores no secret. It never calls the GitHub API.
+- **Settings.** Your inline / side-by-side choice is remembered in the preview page's own storage on your device.
+- **Reporting a problem.** If you use **Report a problem**, the extension opens a new issue form on github.com in your browser, prefilled with the GitHub page address you confirmed in the dialog, the error shown, your browser and extension version. You review the form and submit it yourself; the extension sends nothing.
 
 ## What the extension does not do
 
