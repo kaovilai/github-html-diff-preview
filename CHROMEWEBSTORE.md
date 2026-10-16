@@ -122,7 +122,7 @@ https://github.com/kaovilai/github-html-diff-preview/blob/main/PRIVACY.md
 
 ## Distribution
 
-**Visibility**: Public
+**Visibility**: Public (publishes automatically once review passes)
 **Regions**: All regions
 
 ## Developer Info
@@ -143,7 +143,7 @@ https://github.com/kaovilai/github-html-diff-preview
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Draft saved in the dashboard (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`), not submitted |
+| 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Submitted 2026-10-16, pending review (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`); set to publish automatically after review |
 
 ## Review Notes
 
