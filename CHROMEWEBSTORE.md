@@ -118,7 +118,7 @@ Check only **Authentication information** in the dashboard form.
 **Privacy Policy URL** [REQUIRED]
 https://github.com/kaovilai/github-html-diff-preview/blob/main/PRIVACY.md
 
-(Live only after the repository is renamed; until then the same file is at `.../github-html-preview/blob/main/PRIVACY.md`. Visit the URL before submitting.)
+(Live: returns 200. Visit it once more right before submitting.)
 
 ## Distribution
 
