@@ -141,6 +141,7 @@ https://github.com/kaovilai/github-html-diff-preview
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
+| 0.2.1 | 2026-10-16 | Fixes the single-file preview rendering in a narrow box instead of filling the window. | Draft, not submitted |
 | 0.2.0 | 2026-10-16 | Removes the GitHub API fallback and the token option (read-only raw fetching through the browser's sign-in only), drops the `storage` and `api.github.com` permissions, and adds "Report a problem" (prefilled GitHub issue form the user submits). | Submitted 2026-10-16, pending review (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`); set to publish automatically after review |
 | 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Submitted 2026-10-16; review cancelled the same day and replaced by 0.2.0 (smaller permission set) |
 

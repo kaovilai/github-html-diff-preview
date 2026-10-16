@@ -24,7 +24,8 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .pane + .pane { border-left: 1px solid var(--border); }
 .pane-title { padding: 4px 10px; background: var(--bar); border-bottom: 1px solid var(--border); color: var(--muted); }
-.pane iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+/* single-file preview puts the frame straight into the stage; without a size it would stay at the default 300px */
+#stage > iframe, .pane iframe { flex: 1; min-width: 0; width: 100%; border: 0; background: #fff; }
 .placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); }
 [hidden] { display: none !important; }
 .controls { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }

@@ -32,6 +32,29 @@ test.describe("single file preview", () => {
         expect(gh.requests).toContain("/o/r/raw/main/dir/img/logo.png");
     });
 
+    test("the preview fills the window (not a default-sized box), with and without scripts", async ({ context }) => {
+        await fakeGithub(context, { files });
+        const page = await context.newPage();
+        await page.goto("https://github.com/o/r/blob/main/dir/page.html");
+        const [viewer] = await Promise.all([context.waitForEvent("page"), page.locator("[data-hp-blob-button]").click()]);
+        await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("Hello");
+
+        const fill = async () => viewer.evaluate(() => {
+            const frame = document.querySelector("#stage > iframe")!.getBoundingClientRect();
+            const stage = document.getElementById("stage")!.getBoundingClientRect();
+            return { widthRatio: frame.width / stage.width, heightRatio: frame.height / stage.height };
+        });
+        const plain = await fill();
+        expect(plain.widthRatio).toBeGreaterThan(0.98);
+        expect(plain.heightRatio).toBeGreaterThan(0.98);
+
+        await viewer.locator("#run-scripts").check();
+        await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("script ran");
+        const scripted = await fill();
+        expect(scripted.widthRatio).toBeGreaterThan(0.98);
+        expect(scripted.heightRatio).toBeGreaterThan(0.98);
+    });
+
     test("scripts only run after the explicit opt-in, inside the sandbox page", async ({ context }) => {
         await fakeGithub(context, { files });
         const page = await context.newPage();

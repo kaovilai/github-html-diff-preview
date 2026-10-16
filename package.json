@@ -1,6 +1,6 @@
 {
   "name": "github-html-diff-preview",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Browser extension that previews HTML files and rendered HTML diffs on GitHub, entirely locally.",
   "license": "MIT",

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Fixed the single-file preview showing the page in a narrow box (about a quarter of the window) instead of filling it. A test now checks the frame fills the window, with and without scripts.
+
 ## 0.2.0
 
 - Removed the GitHub REST API fallback and the personal access token option. The extension now only reads, through the browser's own GitHub sign-in (`/raw/...`, plus the page's own data and `.diff`), so nothing is stored and `api.github.com` is never contacted.
