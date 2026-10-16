@@ -1,7 +1,7 @@
 // Renders static/icons/*.png from an inline SVG with Playwright's Chromium. The artwork is original to this project.
 import { chromium } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -19,7 +19,7 @@ export const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12
   <rect x="28" y="88" width="30" height="6" rx="3" fill="#d0d7de"/>
 </svg>`;
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     const browser = await chromium.launch();
     await mkdir(path.join(root, "static/icons"), { recursive: true });
     await writeFile(path.join(root, "store/icon.svg"), ICON_SVG);

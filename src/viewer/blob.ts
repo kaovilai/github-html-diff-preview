@@ -44,7 +44,10 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
     const scriptWarning = byId("script-warning");
     byId("scripts-label").hidden = !scriptsSupported();
 
+    // a slower earlier render must not replace the frame of a newer one when the toggle is flipped quickly
+    let generation = 0;
     const render = async () => {
+        const mine = ++generation;
         const allowScripts = toggle.checked;
         scriptWarning.hidden = !allowScripts;
         byId("status").hidden = false;
@@ -61,6 +64,7 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
         const doc = prepared.makeDocument();
         rewriteUrls(doc, prepared.ctx);
         const html = serializeDocument(doc);
+        if (mine !== generation) return;
 
         const frame = allowScripts ? renderScripted(html) : renderStatic(html);
         byId("stage").querySelectorAll("iframe").forEach(old => old.remove());

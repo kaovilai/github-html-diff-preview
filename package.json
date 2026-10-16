@@ -11,7 +11,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -24,7 +24,7 @@
     "test:e2e": "node scripts/build.mjs chrome && playwright test",
     "check": "npm run typecheck && npm run lint && npm test",
     "icons": "node scripts/make-icons.mjs",
-    "store-assets": "node scripts/store-assets.mjs",
+    "store-assets": "node scripts/store-assets.ts",
     "source-zip": "mkdir -p dist && git archive --format=zip --output dist/github-html-preview-source.zip HEAD"
   },
   "devDependencies": {

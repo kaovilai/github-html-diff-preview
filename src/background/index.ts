@@ -53,7 +53,8 @@ const probe = async (url: string) => {
         first ??= { ref, path, outcomes };
         if (outcomes.some(outcome => outcome.ok)) return { ref, path, outcomes };
     }
-    return first!;
+    if (!first) throw new Error("Expected a github.com/<owner>/<repo>/blob/<ref>/<path> URL.");
+    return first;
 }
 
 const handle = async (request: Request, sender: chrome.runtime.MessageSender): Promise<unknown> => {
