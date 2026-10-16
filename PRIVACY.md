@@ -22,6 +22,6 @@ Previews render untrusted repository HTML in a sandboxed frame with scripts disa
 
 ## Contact
 
-Questions or concerns: open an issue at https://github.com/kaovilai/github-html-diff-preview/issues.
+Questions or concerns: open an issue at https://github.com/kaovilai/github-html-diff-preview/issues or write to github-html-diff-preview@tig.pw.
 
 *Last updated: 2026-10-16.*

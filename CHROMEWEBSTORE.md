@@ -128,13 +128,13 @@ https://github.com/kaovilai/github-html-diff-preview/blob/main/PRIVACY.md
 ## Developer Info
 
 **Publisher Name** [REQUIRED]
-TBD (owner's choice; shown under "Offered by").
+Currently `passawit.kaovilai` (set on the dashboard Settings page; the owner may change it; shown under "Offered by").
 
 **Contact Email** [REQUIRED]
-TBD (owner's; displayed publicly; must be verified on the dashboard Account page).
+github-html-diff-preview@tig.pw (`<repo-name>@tig.pw` convention; displayed publicly; must be verified from the link the store emails to it on the dashboard Account page, so the Mailgun route for this address must exist first).
 
 **Support URL / Email** [RECOMMENDED]
-https://github.com/kaovilai/github-html-diff-preview/issues
+https://github.com/kaovilai/github-html-diff-preview/issues (email: github-html-diff-preview@tig.pw)
 
 **Homepage URL** [RECOMMENDED]
 https://github.com/kaovilai/github-html-diff-preview

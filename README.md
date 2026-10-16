@@ -109,7 +109,7 @@ The end-to-end tests run Chromium with the unpacked extension against a fake `gi
 
 Source layout: `src/background` (worker), `src/content` (GitHub page integration), `src/viewer` (preview page), `src/options`, `src/sandbox` (opt-in scripts page), `src/core` (diffing, sanitizing, fetching; unit tested).
 
-Store listing text is in [CHROMEWEBSTORE.md](CHROMEWEBSTORE.md), images and publishing steps in [`store/`](store/). Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md); to report one, see [docs/REPORTING.md](docs/REPORTING.md) (issue forms ask for a URL and acceptance criteria that the issue helper turns into tests).
+Store listing text is in [CHROMEWEBSTORE.md](CHROMEWEBSTORE.md), images and publishing steps in [`store/`](store/). Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md); to report one, see [docs/REPORTING.md](docs/REPORTING.md), or email github-html-diff-preview@tig.pw (issue forms ask for a URL and acceptance criteria that the issue helper turns into tests).
 
 ### Automation
 
