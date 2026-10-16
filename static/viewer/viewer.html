@@ -58,7 +58,20 @@
             </div>
         </form>
     </dialog>
-    <div id="script-warning" hidden>Scripts are running in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows. Only use this on files you trust.</div>
+    <dialog id="scripts-dialog" aria-labelledby="scripts-title">
+        <form method="dialog" id="scripts-form">
+            <h2 id="scripts-title">Run this page's scripts?</h2>
+            <p>The scripts in this file from <strong id="scripts-repo"></strong> will run in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows.</p>
+            <div id="scripts-list"></div>
+            <p class="muted">&ldquo;Always allow&rdquo; skips this question for every file in this repository, including scripts added later. Undo it any time on the extension's options page.</p>
+            <div class="actions">
+                <button id="scripts-cancel" class="seg" type="button">Cancel</button>
+                <button id="scripts-once" class="seg primary" type="button">Run this time</button>
+                <button id="scripts-always" class="seg" type="button">Always allow this repository</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="script-warning" hidden>Scripts are running in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows. Only use this on files you trust.<span id="script-warning-always" hidden> Scripts are always allowed for this repository; <a href="../options/options.html" target="_blank" rel="noopener noreferrer">change this in the options</a>.</span></div>
     <div id="notice" hidden></div>
     <main id="stage"><div id="status">Loading&hellip;</div></main>
     <script src="../viewer.js"></script>

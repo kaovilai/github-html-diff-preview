@@ -66,7 +66,14 @@ test.describe("WCAG 2.2 AA", () => {
             const page = await openViewerBlob(context, scheme);
             await expectNoViolations(page);
             await page.locator("#run-scripts").check();
+            await expect(page.locator("#scripts-dialog")).toBeVisible();
+            await expectNoViolations(page);
+            for (const report of await measureControls(page, "#scripts-dialog button")) {
+                expect(report.ratio, report.text).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+            }
+            await page.locator("#scripts-always").click();
             await expect(page.locator("#script-warning")).toBeVisible();
+            await expect(page.locator("#script-warning-always")).toBeVisible();
             await expectNoViolations(page);
         });
 
@@ -92,7 +99,16 @@ test.describe("WCAG 2.2 AA", () => {
 
         test(`options page has no violations, ${scheme}`, async ({ context }) => {
             await fakeGithub(context, repo);
-            await expectNoViolations(await openOptions(context, scheme));
+            const page = await openOptions(context, scheme);
+            await expectNoViolations(page);
+            // with repositories on the "always allow scripts" list as well
+            await page.evaluate(() => localStorage.setItem("trustedScriptRepos", JSON.stringify(["o/r", "acme/site"])));
+            await page.reload();
+            await expect(page.locator("#trusted-list li")).toHaveCount(2);
+            await expectNoViolations(page);
+            for (const report of await measureControls(page, "#trusted-list button, #trusted-clear")) {
+                expect(report.ratio, report.text).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+            }
         });
     }
 

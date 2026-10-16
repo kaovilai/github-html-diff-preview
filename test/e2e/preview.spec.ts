@@ -1,4 +1,5 @@
-import { expect, fakeGithub, PNG, test } from "./fixtures";
+import type { BrowserContext } from "@playwright/test";
+import { enableScripts, expect, fakeGithub, PNG, test } from "./fixtures";
 
 const PAGE = `<!doctype html><html><head><link rel="stylesheet" href="style.css"><title>t</title></head>
 <body><h1 id="title">Hello</h1><img id="logo" src="img/logo.png"><a id="doc" href="README.md">docs</a>
@@ -48,7 +49,7 @@ test.describe("single file preview", () => {
         expect(plain.widthRatio).toBeGreaterThan(0.98);
         expect(plain.heightRatio).toBeGreaterThan(0.98);
 
-        await viewer.locator("#run-scripts").check();
+        await enableScripts(viewer);
         await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("script ran");
         const scripted = await fill();
         expect(scripted.widthRatio).toBeGreaterThan(0.98);
@@ -64,7 +65,7 @@ test.describe("single file preview", () => {
         await expect(viewer.locator("#script-warning")).toBeHidden();
         await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("Hello");
 
-        await viewer.locator("#run-scripts").check();
+        await enableScripts(viewer);
         await expect(viewer.locator("#script-warning")).toBeVisible();
         await expect(viewer.frameLocator("iframe").locator("h1")).toHaveText("script ran");
 
@@ -99,10 +100,108 @@ test.describe("single file preview", () => {
         expect(cdnRequests).toBe(0);
 
         // the sandbox page keeps Chrome's default CSP: inline scripts run, remote script sources are blocked
-        await viewer.locator("#run-scripts").check();
+        await enableScripts(viewer);
         await expect(viewer.locator("#script-warning")).toBeVisible();
         await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("static");
         expect(cdnRequests).toBe(0);
+    });
+
+    test.describe("confirming scripts", () => {
+        const scripted = {
+            "main/s.html": '<body><p id="p">static</p><script src="js/a.js"></script><script src="https://cdn.example.test/lib.js"></script><script>window.__inline = 1</script></body>',
+            "main/js/a.js": 'document.getElementById("p").textContent = "local ran";'
+        };
+        const open = async (context: BrowserContext) => {
+            const page = await context.newPage();
+            await page.goto("https://github.com/o/r/blob/main/s.html");
+            const [viewer] = await Promise.all([context.waitForEvent("page"), page.locator("[data-hp-blob-button]").click()]);
+            await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("static");
+            return viewer;
+        };
+
+        test("ticking the box asks first and lists the scripts that would run; cancel runs nothing", async ({ context }) => {
+            const gh = await fakeGithub(context, { files: scripted });
+            const viewer = await open(context);
+            await viewer.locator("#run-scripts").check();
+            const dialog = viewer.locator("#scripts-dialog");
+            await expect(dialog).toBeVisible();
+            await expect(dialog).toContainText("o/r");
+            await expect(viewer.locator("#scripts-list")).toContainText("https://github.com/o/r/raw/main/js/a.js");
+            await expect(viewer.locator("#scripts-list")).toContainText("1 inline script will run");
+            await expect(viewer.locator("#scripts-list")).toContainText("https://cdn.example.test/lib.js");
+            // nothing is fetched or run until the user agrees
+            expect(gh.requests).not.toContain("/o/r/raw/main/js/a.js");
+
+            await viewer.locator("#scripts-cancel").click();
+            await expect(dialog).toBeHidden();
+            await expect(viewer.locator("#run-scripts")).not.toBeChecked();
+            await expect(viewer.locator("#script-warning")).toBeHidden();
+            await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("static");
+            expect(gh.requests).not.toContain("/o/r/raw/main/js/a.js");
+
+            // Escape also declines
+            await viewer.locator("#run-scripts").check();
+            await expect(dialog).toBeVisible();
+            await viewer.keyboard.press("Escape");
+            await expect(viewer.locator("#run-scripts")).not.toBeChecked();
+        });
+
+        test("\"Run this time\" runs the scripts but asks again next time", async ({ context }) => {
+            await fakeGithub(context, { files: scripted });
+            const viewer = await open(context);
+            await enableScripts(viewer);
+            await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("local ran");
+            await expect(viewer.locator("#script-warning-always")).toBeHidden();
+
+            await viewer.locator("#run-scripts").uncheck();
+            await viewer.locator("#run-scripts").check();
+            await expect(viewer.locator("#scripts-dialog")).toBeVisible();
+        });
+
+        test("\"Always allow\" skips the question for that repository only, and the options page undoes it", async ({ context, extensionId }) => {
+            await fakeGithub(context, { files: { ...scripted, "main/t.html": "<body><p id='p'>other</p></body>" } });
+            const viewer = await open(context);
+            await viewer.locator("#run-scripts").check();
+            await viewer.locator("#scripts-always").click();
+            await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("local ran");
+            await expect(viewer.locator("#script-warning-always")).toBeVisible();
+
+            // a new preview of the same repository does not ask
+            const again = await open(context);
+            await again.locator("#run-scripts").check();
+            await expect(again.frameLocator("iframe").locator("#p")).toHaveText("local ran");
+            await expect(again.locator("#scripts-dialog")).toBeHidden();
+
+            // the options page lists it; removing it brings the question back
+            const options = await context.newPage();
+            await options.goto(`chrome-extension://${extensionId}/options/options.html`);
+            await expect(options.locator("#trusted-list li")).toHaveCount(1);
+            await expect(options.locator("#trusted-list li")).toContainText("o/r");
+            await expect(options.locator("#trusted-empty")).toBeHidden();
+            await options.getByRole("button", { name: "Remove o/r from the list" }).click();
+            await expect(options.locator("#trusted-list li")).toHaveCount(0);
+            await expect(options.locator("#trusted-empty")).toBeVisible();
+
+            const third = await open(context);
+            await third.locator("#run-scripts").check();
+            await expect(third.locator("#scripts-dialog")).toBeVisible();
+        });
+
+        test("allowing one repository does not allow another", async ({ context }) => {
+            await fakeGithub(context, { files: scripted }, "o", "r");
+            await fakeGithub(context, { files: scripted }, "o", "other");
+            const viewer = await open(context);
+            await viewer.locator("#run-scripts").check();
+            await viewer.locator("#scripts-always").click();
+            await expect(viewer.frameLocator("iframe").locator("#p")).toHaveText("local ran");
+
+            const page = await context.newPage();
+            await page.goto("https://github.com/o/other/blob/main/s.html");
+            const [other] = await Promise.all([context.waitForEvent("page"), page.locator("[data-hp-blob-button]").click()]);
+            await expect(other.frameLocator("iframe").locator("#p")).toHaveText("static");
+            await other.locator("#run-scripts").check();
+            await expect(other.locator("#scripts-dialog")).toBeVisible();
+        });
     });
 
     test("resolves branch names that contain slashes", async ({ context }) => {

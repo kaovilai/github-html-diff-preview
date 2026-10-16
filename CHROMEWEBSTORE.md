@@ -35,7 +35,7 @@ HOW TO USE IT
 
 LOCAL AND PRIVATE BY DESIGN
 No hosted preview site, no proxy, no account, no analytics. Files go from GitHub straight to your browser and nowhere else. Private repositories work through the GitHub sign-in already in your browser, read-only, with no token to store and no GitHub API. If something cannot be read, a "Report a problem" button opens a prefilled GitHub issue form that you review and submit yourself.
-Previewed pages are untrusted, so they are shown in a sandboxed frame with scripts turned off. An explicit "Run scripts (untrusted)" switch for single files is available if you want it.
+Previewed pages are untrusted, so they are shown in a sandboxed frame with scripts turned off. An explicit "Run scripts (untrusted)" switch for single files is available if you want it; it lists the scripts that would run and asks first, with an optional "always allow this repository" you can undo in the options.
 
 SUPPORT
 Questions and bug reports: https://github.com/kaovilai/github-html-diff-preview/issues (the forms ask for a URL and what you expected). Open source (MIT): https://github.com/kaovilai/github-html-diff-preview
@@ -141,7 +141,7 @@ https://github.com/kaovilai/github-html-diff-preview
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 0.2.1 | 2026-10-16 | Fixes the single-file preview rendering in a narrow box instead of filling the window; "Report a problem" can include the page's HTML (opt-in, off by default) for private repositories. | Draft, not submitted |
+| 0.2.1 | 2026-10-16 | Fixes the single-file preview rendering in a narrow box instead of filling the window; "Report a problem" can include the page's HTML (opt-in, off by default) for private repositories; "Run scripts" now asks for confirmation, listing the scripts, with an undoable "always allow this repository". | Draft, not submitted |
 | 0.2.0 | 2026-10-16 | Removes the GitHub API fallback and the token option (read-only raw fetching through the browser's sign-in only), drops the `storage` and `api.github.com` permissions, and adds "Report a problem" (prefilled GitHub issue form the user submits). | Submitted 2026-10-16, pending review (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`); set to publish automatically after review |
 | 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Submitted 2026-10-16; review cancelled the same day and replaced by 0.2.0 (smaller permission set) |
 

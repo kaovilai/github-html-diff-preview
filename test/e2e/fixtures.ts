@@ -129,3 +129,9 @@ export const fakeGithub = async (context: BrowserContext, repo: FakeRepo, owner 
 }
 
 export const openViewerFrame = (page: Page) => page.frameLocator("iframe").first();
+
+// Turns on "Run scripts" in a single-file preview and answers the confirmation with "Run this time".
+export const enableScripts = async (viewer: Page) => {
+    await viewer.locator("#run-scripts").check();
+    await viewer.locator("#scripts-once").click();
+}

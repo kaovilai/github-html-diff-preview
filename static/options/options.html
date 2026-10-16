@@ -9,7 +9,7 @@
 <body>
     <main>
         <h1>GitHub HTML Diff Preview</h1>
-        <p class="lead">Everything runs in your browser. Files are read from GitHub with the sign-in already in this browser; nothing is sent anywhere else. There is nothing to configure and no token to store.</p>
+        <p class="lead">Everything runs in your browser. Files are read from GitHub with the sign-in already in this browser; nothing is sent anywhere else. There is no token to store, and the only setting is the list of repositories you allowed to run scripts.</p>
 
         <section>
             <h2>How it reads files</h2>
@@ -27,6 +27,18 @@
             <div class="row"><button id="probe" type="button">Test</button></div>
             <pre id="probe-result" hidden></pre>
             <p class="hint">Shows whether this browser's GitHub sign-in can read that file.</p>
+        </section>
+
+        <section>
+            <h2>Repositories allowed to run scripts</h2>
+            <p class="hint">
+                Previews never run a page's scripts unless you turn on <em>Run scripts (untrusted)</em> and confirm. If you chose
+                <em>Always allow</em> for a repository, it appears here and the confirmation is skipped for its files. Remove a
+                repository to be asked again.
+            </p>
+            <p id="trusted-empty" class="hint">No repository is always allowed. Scripts ask for confirmation every time.</p>
+            <ul id="trusted-list"></ul>
+            <div class="row"><button id="trusted-clear" type="button" hidden>Remove all</button></div>
         </section>
 
         <section>

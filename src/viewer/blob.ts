@@ -1,7 +1,9 @@
 import { send, type ResolvedBlob } from "../shared/messages";
-import { getScriptPaths, loadScripts, rewriteUrls, serializeDocument } from "../core/html-prepare";
-import { byId, fetchText, prepareSide, STATIC_SANDBOX } from "./common";
+import { describeScripts, getScriptPaths, loadScripts, rewriteUrls, serializeDocument } from "../core/html-prepare";
+import { byId, fetchText, prepareSide, showNotice, STATIC_SANDBOX } from "./common";
 import { setReportState, showError } from "./report";
+import { confirmScripts } from "./script-consent";
+import { isTrusted, trustRepo } from "../shared/script-trust";
 
 const SCRIPT_SANDBOX = "allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals";
 
@@ -52,6 +54,7 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
         const mine = ++generation;
         const allowScripts = toggle.checked;
         scriptWarning.hidden = !allowScripts;
+        byId("script-warning-always").hidden = !(allowScripts && isTrusted(owner, repo));
         byId("status").hidden = false;
         byId("status").textContent = "Loading…";
         byId("status").className = "";
@@ -74,7 +77,16 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
         byId("status").hidden = true;
     };
 
-    toggle.addEventListener("change", () => {
+    toggle.addEventListener("change", async () => {
+        // turning scripts on asks first, unless the user already allowed this repository
+        if (toggle.checked && !isTrusted(owner, repo)) {
+            const choice = await confirmScripts({ owner, repo, ref, summary: describeScripts(new DOMParser().parseFromString(text, "text/html"), path) });
+            if (choice === "cancel") {
+                toggle.checked = false;
+                return;
+            }
+            if (choice === "always" && !trustRepo(owner, repo)) showNotice("This browser would not save the choice, so scripts will ask again next time.");
+        }
         render().catch(showError);
     });
     await render();

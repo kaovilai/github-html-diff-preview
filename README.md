@@ -25,7 +25,7 @@ A browser extension that previews HTML files on GitHub and shows **rendered befo
 ![Inline diff with additions and a removal bubble](docs/screenshots/2-inline-green-additions-red-bubble.png)
 ![Side by side](docs/screenshots/3-side-by-side.png)
 
-**Scripts are off by default.** Repository HTML is untrusted, and running its JavaScript would also disturb the diff highlighting. Single-file previews have an explicit, labelled **Run scripts (untrusted)** toggle (Chrome only); scripts then run in a manifest sandbox page with an opaque origin: no access to GitHub, your cookies, or the extension's APIs. The sandbox keeps Chrome's default policy, so inline scripts run but scripts loaded from other sites (CDNs) are blocked. Diffs never run scripts.
+**Scripts are off by default.** Repository HTML is untrusted, and running its JavaScript would also disturb the diff highlighting. Single-file previews have an explicit, labelled **Run scripts (untrusted)** toggle (Chrome only) that asks for confirmation first and lists the script addresses that would run (plus the inline-script count and any remote scripts that stay blocked). **Run this time** or **Always allow this repository** (undo it on the options page, which lists allowed repositories with a Remove button for each); scripts then run in a manifest sandbox page with an opaque origin: no access to GitHub, your cookies, or the extension's APIs. The sandbox keeps Chrome's default policy, so inline scripts run but scripts loaded from other sites (CDNs) are blocked. Diffs never run scripts.
 
 ## Install
 
@@ -87,7 +87,7 @@ Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked
 | `https://github.com/*` | Add the Preview buttons to GitHub pages; read the file you asked to preview (`/raw/...`) and a pull request's file status (`.diff`) with your existing GitHub sign-in. |
 | `https://raw.githubusercontent.com/*` | Where GitHub redirects `…/raw/…` downloads (required for private repositories). |
 
-There is no `storage`, `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` permission, and no access to `api.github.com`. The preview page is web-accessible to `https://github.com/*` only, so the in-page diff panel can embed it. The chosen diff layout is remembered in the preview page's own storage.
+There is no `storage`, `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` permission, and no access to `api.github.com`. The preview page is web-accessible to `https://github.com/*` only, so the in-page diff panel can embed it. The chosen diff layout and the repositories you always allow scripts for are remembered in the extension pages' own storage.
 
 ## How it works
 

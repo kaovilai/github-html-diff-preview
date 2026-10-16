@@ -32,6 +32,7 @@ body { display: flex; flex-direction: column; background: var(--bg); color: var(
 .spacer { flex: 1; }
 #toolbar > .seg { margin-left: auto; border-radius: 6px; }
 #toolbar a { color: var(--link); }
+#script-warning a { color: inherit; text-decoration: underline; }
 #script-warning { padding: 6px 10px; background: rgba(191, 135, 0, .18); border-bottom: 1px solid var(--border); }
 
 /* touch (or a phone-sized screen): no hover, fingertip-sized controls (44px) */
@@ -57,6 +58,10 @@ dialog h2 { margin: 0 0 8px; font-size: 16px; }
 dialog label { display: block; margin: 12px 0 4px; font-weight: 600; }
 dialog select, dialog textarea { width: 100%; padding: 6px 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
 dialog label.check { display: flex; gap: 8px; align-items: center; min-height: 24px; }
+dialog h3 { margin: 12px 0 4px; font-size: 12px; }
+dialog ul { margin: 0; padding-left: 18px; }
+dialog li { overflow-wrap: anywhere; }
+#scripts-list { max-height: 40vh; overflow: auto; }
 dialog .muted { color: var(--muted); }
 dialog .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
 .seg.primary { background: var(--active); border-color: var(--active); color: #fff; }

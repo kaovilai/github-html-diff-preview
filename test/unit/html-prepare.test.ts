@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectAssetPaths, getScriptPaths, getStylesheetPaths, loadScripts, loadStylesheets, resolveRepoPath, rewriteUrls, sanitizeDocument } from "../../src/core/html-prepare";
+import { collectAssetPaths, describeScripts, getScriptPaths, getStylesheetPaths, loadScripts, loadStylesheets, resolveRepoPath, rewriteUrls, sanitizeDocument } from "../../src/core/html-prepare";
 
 const parse = (html: string) => new DOMParser().parseFromString(html, "text/html");
 const ctx = { owner: "o", repo: "r", ref: "SHA", path: "dir/a.html" };
@@ -151,5 +151,27 @@ describe("asset and script discovery", () => {
     it("loads scripts, ignoring failures", async () => {
         const scripts = await loadScripts(["a.js", "b.js"], async path => { if (path === "b.js") throw new Error("404"); return "x"; });
         expect(Array.from(scripts.keys())).toEqual(["a.js"]);
+    });
+});
+
+describe("describeScripts", () => {
+    it("lists what script mode would run: local files, inline scripts, and remote ones that will not load", () => {
+        const doc = parse(`<head><script src="js/app.js"></script><script src="../lib/x.js?v=2"></script><script src="js/app.js"></script>
+            <script src="https://cdn.test/lib.js"></script><script src="//cdn.test/b.js"></script><script src="https://cdn.test/lib.js"></script></head>
+            <body><script>run()</script><script type="module">import "./m.js"</script><script> </script></body>`);
+        expect(describeScripts(doc, "dir/a.html")).toEqual({
+            local: ["dir/js/app.js", "lib/x.js"],
+            remote: ["https://cdn.test/lib.js", "//cdn.test/b.js"],
+            inline: 2
+        });
+    });
+
+    it("does not count data blocks as scripts", () => {
+        const doc = parse(`<script type="application/ld+json">{}</script><script type="importmap">{}</script><script type="text/template"><p></p></script><script type="text/javascript">x()</script>`);
+        expect(describeScripts(doc, "a.html")).toEqual({ local: [], remote: [], inline: 1 });
+    });
+
+    it("reports nothing for a page without scripts", () => {
+        expect(describeScripts(parse("<p>hi</p>"), "a.html")).toEqual({ local: [], remote: [], inline: 0 });
     });
 });

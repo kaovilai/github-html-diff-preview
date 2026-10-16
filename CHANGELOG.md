@@ -2,6 +2,7 @@
 
 ## 0.2.1
 
+- **Run scripts (untrusted)** now asks for confirmation and lists the script addresses that would run (repository scripts, the inline-script count, and remote scripts that stay blocked). Choose **Run this time** or **Always allow this repository**; the options page lists allowed repositories so each can be removed.
 - **Report a problem** can include the page's HTML (off by default each time) for private repositories where a link would not help. Long HTML is clipped in the form and copied in full to the clipboard.
 - Fixed the single-file preview showing the page in a narrow box (about a quarter of the window) instead of filling it. A test now checks the frame fills the window, with and without scripts.
 

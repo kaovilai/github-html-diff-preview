@@ -19,7 +19,7 @@
 
 ## Previewed pages
 
-Previews render untrusted repository HTML in a sandboxed frame with scripts disabled. If you turn on **Run scripts (untrusted)** for a single-file preview, the page's own scripts run in an isolated sandbox and can make network requests like any web page; that traffic is theirs, not the extension's.
+Previews render untrusted repository HTML in a sandboxed frame with scripts disabled. If you turn on **Run scripts (untrusted)** for a single-file preview, the page's own scripts run in an isolated sandbox and can make network requests like any web page; that traffic is theirs, not the extension's. Turning the switch on asks for confirmation and lists the scripts first. If you choose **Always allow** for a repository, its name (`owner/repo`) is kept in the extension's own local storage on your device until you remove it on the options page; it is never sent anywhere.
 
 ## Contact
 

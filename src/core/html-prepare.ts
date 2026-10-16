@@ -153,6 +153,34 @@ export const getScriptPaths = (doc: Document, filePath: string): string[] => {
     return pathsOf(relativeScripts(doc), "src", filePath, MAX_SCRIPTS);
 }
 
+export interface ScriptSummary {
+    // repo paths of the scripts in this repository that script mode will fetch and run
+    local: string[];
+    // addresses of scripts hosted elsewhere, exactly as written; the sandbox's default policy never loads them
+    remote: string[];
+    // inline scripts that run
+    inline: number;
+}
+
+// Script types that run code (data blocks such as JSON-LD and import maps do not).
+const EXECUTABLE_SCRIPT_TYPE = /^(|module|(text|application)\/(x-)?(java|ecma)script)$/i;
+
+// What turning on script mode would run for this page; shown to the user before they agree.
+export const describeScripts = (doc: Document, filePath: string): ScriptSummary => {
+    const scripts = Array.from(doc.querySelectorAll<HTMLScriptElement>("script")).filter(script => EXECUTABLE_SCRIPT_TYPE.test((script.getAttribute("type") ?? "").trim()));
+    const remote: string[] = [];
+    let inline = 0;
+    for (const script of scripts) {
+        const src = script.getAttribute("src");
+        if (src === null) {
+            if (script.textContent?.trim()) inline++;
+        } else if (ABSOLUTE_URL.test(src.trim())) {
+            if (remote.indexOf(src.trim()) < 0) remote.push(src.trim());
+        }
+    }
+    return { local: pathsOf(scripts.filter(script => script.hasAttribute("src") && !ABSOLUTE_URL.test(script.getAttribute("src")!.trim())), "src", filePath, MAX_SCRIPTS), remote, inline };
+}
+
 // Fetches stylesheets with their relative @import rules inlined (bounded depth, no cycles).
 // url() references inside each sheet are anchored to that sheet's own location, so the
 // result is self-contained.
