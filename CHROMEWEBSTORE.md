@@ -143,19 +143,13 @@ https://github.com/kaovilai/github-html-diff-preview
 
 | Version | Date | Changes | Status |
 |---------|------|---------|--------|
-| 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Draft |
+| 0.1.0 | 2026-10-16 | Initial release: Preview button, context menu and shortcut for HTML files; rendered before/after diff in pull requests; private repositories through the browser's GitHub sign-in; opt-in script mode (Chrome). | Draft saved in the dashboard (item ID `ppkcpjippikphpgkmkdnjielaalmcmol`), not submitted |
 
 ## Review Notes
 
-### Notes for reviewers (paste into the "Test instructions" tab)
+### Notes for reviewers (paste into the "Test instructions" tab; the field holds at most 500 characters)
 ```
-No sign-in or credentials are needed.
-1. Open https://github.com/redhat-et/pricetag-metering/blob/main/internal/dashboard/welcome.html . A "Preview" button appears next to "Raw". Click it: a new tab shows the rendered page.
-2. Open https://github.com/redhat-et/pricetag-metering/pull/91/changes . Click "Preview" on the .html file; a panel shows the rendered diff (inline and side by side).
-3. Options page (toolbar icon): the optional token and an access-test tool.
-
-The optional "Run scripts (untrusted)" checkbox (single-file preview only) loads the file in a manifest sandbox page (sandbox/frame.html) under Chrome's default sandbox policy: opaque origin, no extension APIs, remote script sources blocked. It is off by default and never used for diffs.
-If the public PR above has changed or been closed, any public pull request that touches an .html file works.
+No sign-in needed. 1) Open https://github.com/redhat-et/pricetag-metering/blob/main/internal/dashboard/welcome.html and click Preview next to Raw: a new tab shows the rendered page. 2) Open https://github.com/redhat-et/pricetag-metering/pull/91/changes and click Preview on the .html file: inline and side-by-side diff. 3) The toolbar icon opens options. The optional Run scripts checkbox (off by default) uses a sandbox page under Chrome's default policy: no extension APIs, no remote scripts.
 ```
 
 ### Known Issues / Limitations
