@@ -1,0 +1,93 @@
+name: Preview or diff looks wrong
+description: The rendered page, the highlighting, or the diff result is not what it should be
+title: "[render] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The fastest way to get this fixed is a **public URL** plus the **smallest HTML that still goes wrong**. An automated helper reproduces the report from these fields.
+  - type: textarea
+    id: urls
+    attributes:
+      label: Public GitHub URL(s)
+      description: One per line. A file (`.../blob/<ref>/<path>.html`) or a pull request's Files changed tab (`.../pull/<n>/files`) plus the path of the HTML file. Leave empty if the repository is private.
+      placeholder: |
+        https://github.com/owner/repo/blob/main/docs/index.html
+        https://github.com/owner/repo/pull/12/files  (file: docs/index.html)
+    validations:
+      required: false
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What looks wrong?
+      options:
+        - A single file preview renders incorrectly
+        - A pull request diff misses a change
+        - A pull request diff reports a change that is not real
+        - Styles, images or fonts are missing
+        - Something else about rendering
+    validations:
+      required: true
+  - type: textarea
+    id: before_html
+    attributes:
+      label: Minimal HTML, before (diff problems only)
+      description: The smallest HTML that shows the problem as the *old* version of the file. Remove everything that is not needed.
+      render: html
+  - type: textarea
+    id: after_html
+    attributes:
+      label: Minimal HTML, after (or the file for a single preview)
+      description: The smallest HTML that shows the problem as the *new* version, or the file itself for a single preview. Relative assets (`css/site.css`, `img/logo.png`) are fine, mention their paths below.
+      render: html
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happens
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria (expected behaviour)
+      description: |
+        What should be true once this is fixed? One short, checkable statement per line. An automated helper turns each line into a test, so be concrete.
+      placeholder: |
+        - A Preview button appears next to Raw on the file page
+        - The new <h2> is outlined green in the inline diff
+        - The stylesheet css/site.css is applied in the preview
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the URL above
+        2. Click Preview
+        3. ...
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 141, Firefox 140, ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown on the extensions page
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before you submit
+      options:
+        - label: I did not paste a personal access token, cookie or any other secret
+          required: true
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+          required: true

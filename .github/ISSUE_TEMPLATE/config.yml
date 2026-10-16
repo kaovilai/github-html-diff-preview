@@ -1,5 +1,5 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Troubleshooting guide
     url: https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md
-    about: Fixes for the most common problems
+    about: Fixes for the most common problems, including private repositories and a missing Preview button

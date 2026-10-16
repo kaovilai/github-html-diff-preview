@@ -1,0 +1,21 @@
+<!-- Hand-written from the selectors the extension relies on; GitHub serves this layout to signed-in users, so it cannot be
+     captured anonymously. Replace it with real markup when a reporter provides it (missing_button issue form). -->
+<main>
+  <section>
+    <div>
+      <h3><a href="#diff-abc">docs/index.html</a></h3>
+      <div>
+        <button aria-pressed="false" aria-label="docs/index.html Viewed">Viewed</button>
+        <button data-file-path="docs/index.html" aria-label="Expand file">Expand</button>
+      </div>
+    </div>
+    <table role="grid" aria-label="Diff for: docs/index.html"><tbody><tr><td>diff</td></tr></tbody></table>
+  </section>
+  <section>
+    <div>
+      <h3><a href="#diff-def">README.md</a></h3>
+      <button data-file-path="README.md">Expand</button>
+    </div>
+    <table role="grid" aria-label="Diff for: README.md"><tbody><tr><td>diff</td></tr></tbody></table>
+  </section>
+</main>

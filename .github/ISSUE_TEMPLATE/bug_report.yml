@@ -1,35 +1,35 @@
-name: Bug report
-description: Something does not work, or looks wrong
+name: Other bug
+description: Something else does not work
+title: "[bug] "
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for reporting. Please check [Troubleshooting](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md) first. **Never paste a personal access token or any other secret.**
   - type: textarea
-    id: what
+    id: urls
     attributes:
-      label: What happened, and what did you expect?
+      label: GitHub URL(s) involved (optional)
+      description: One per line. Public URLs let the automated helper look at the same page.
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens
     validations:
       required: true
-  - type: input
-    id: url
+  - type: textarea
+    id: criteria
     attributes:
-      label: GitHub page where it happened
-      description: A file or pull request URL. Leave blank for a private repository you cannot share.
-  - type: dropdown
-    id: visibility
-    attributes:
-      label: Repository visibility
-      options: [Public, Private, Not sure]
+      label: Acceptance criteria (expected behaviour)
+      description: |
+        What should be true once this is fixed? One short, checkable statement per line. An automated helper turns each line into a test, so be concrete.
+      placeholder: |
+        - A Preview button appears next to Raw on the file page
+        - The new <h2> is outlined green in the inline diff
+        - The stylesheet css/site.css is applied in the preview
+      render: markdown
     validations:
       required: true
-  - type: dropdown
-    id: feature
+  - type: textarea
+    id: steps
     attributes:
-      label: What were you doing?
-      options: [Previewing a single HTML file, Pull request diff preview, Options page or token, Other]
-    validations:
-      required: true
+      label: Steps to reproduce
   - type: input
     id: browser
     attributes:
@@ -41,10 +41,16 @@ body:
     id: version
     attributes:
       label: Extension version
+      description: Shown on the extensions page
       placeholder: 0.1.0
-  - type: textarea
-    id: probe
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
     attributes:
-      label: Output of "Test access" (options page)
-      description: Run it with the file's URL and paste the result. It contains no secrets.
-      render: text
+      label: Before you submit
+      options:
+        - label: I did not paste a personal access token, cookie or any other secret
+          required: true
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+          required: true

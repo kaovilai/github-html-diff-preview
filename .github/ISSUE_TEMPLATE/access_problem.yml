@@ -1,0 +1,86 @@
+name: Cannot load a file or diff (private repository, token, rate limit)
+description: The preview says the file was not found, access was denied, or a rate limit was hit
+title: "[access] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run **Test access** on the extension's options page with the file's URL first and paste its output below; it shows which fetch methods work and contains no secrets.
+  - type: textarea
+    id: urls
+    attributes:
+      label: GitHub URL(s)
+      description: One per line. The file or pull request you tried to preview. You may leave the repository name out for a private repository.
+    validations:
+      required: true
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Repository visibility
+      options: [Public, Private, Not sure]
+    validations:
+      required: true
+  - type: dropdown
+    id: sso
+    attributes:
+      label: Does the organization use SAML single sign-on or IP restrictions?
+      options: ["No", "Yes", "Not sure"]
+    validations:
+      required: true
+  - type: dropdown
+    id: token
+    attributes:
+      label: Did you configure a personal access token?
+      options: ["No", "Yes, fine-grained", "Yes, classic", Not sure]
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: Output of "Test access"
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: The exact message you see
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria (expected behaviour)
+      description: |
+        What should be true once this is fixed? One short, checkable statement per line. An automated helper turns each line into a test, so be concrete.
+      placeholder: |
+        - A Preview button appears next to Raw on the file page
+        - The new <h2> is outlined green in the inline diff
+        - The stylesheet css/site.css is applied in the preview
+      render: markdown
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 141, Firefox 140, ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown on the extensions page
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before you submit
+      options:
+        - label: I did not paste a personal access token, cookie or any other secret
+          required: true
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+          required: true

@@ -1,0 +1,80 @@
+name: Preview button missing or misplaced
+description: The Preview button does not show up, is in the wrong place, or does not respond
+title: "[button] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub changes its page markup without notice, which is the usual cause. Two things make this quick to fix: the **page URL** and a **copy of the page's markup around the file header**.
+  - type: textarea
+    id: urls
+    attributes:
+      label: Public GitHub page URL(s) where it is missing
+      description: One per line. A file page (`.../blob/...html`) or a pull request's Files changed tab.
+    validations:
+      required: true
+  - type: dropdown
+    id: layout
+    attributes:
+      label: Which GitHub layout do you see?
+      options:
+        - Not sure
+        - The current layout
+        - The classic layout (feature preview turned off)
+        - GitHub Enterprise Server
+    validations:
+      required: true
+  - type: dropdown
+    id: alternatives
+    attributes:
+      label: Do the right-click menu and the keyboard shortcut still work?
+      description: They do not depend on GitHub's markup.
+      options:
+        - Not tried
+        - Yes, both work
+        - No, neither works
+    validations:
+      required: true
+  - type: textarea
+    id: dom_snippet
+    attributes:
+      label: Page markup around the Raw button or the file header (optional but very helpful)
+      description: In your browser's developer tools, right-click the Raw button (file page) or the file header (pull request), choose *Inspect*, then *Copy outerHTML* of the surrounding toolbar. Remove anything private.
+      render: html
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria (expected behaviour)
+      description: |
+        What should be true once this is fixed? One short, checkable statement per line. An automated helper turns each line into a test, so be concrete.
+      placeholder: |
+        - A Preview button appears next to Raw on the file page
+        - The new <h2> is outlined green in the inline diff
+        - The stylesheet css/site.css is applied in the preview
+      render: markdown
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 141, Firefox 140, ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Shown on the extensions page
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before you submit
+      options:
+        - label: I did not paste a personal access token, cookie or any other secret
+          required: true
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+          required: true

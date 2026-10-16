@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest an improvement
+title: "[feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: urls
+    attributes:
+      label: Example GitHub URL(s) (optional)
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria (expected behaviour)
+      description: |
+        What should be true once this is fixed? One short, checkable statement per line. An automated helper turns each line into a test, so be concrete.
+      placeholder: |
+        - A Preview button appears next to Raw on the file page
+        - The new <h2> is outlined green in the inline diff
+        - The stylesheet css/site.css is applied in the preview
+      render: markdown
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Before you submit
+      options:
+        - label: I did not paste a personal access token, cookie or any other secret
+          required: true
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+          required: true
