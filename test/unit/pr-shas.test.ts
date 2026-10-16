@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { findDiffShas } from "../../src/content/pr-shas";
 
@@ -10,6 +12,14 @@ describe("findDiffShas", () => {
     it("takes the commits from the page's own diff request when a file link at the head agrees", () => {
         const doc = page(`<a href="/o/r/blob/${B}/x.html">View file</a>`);
         expect(findDiffShas({ owner: "o", repo: "r", pr: "5" }, doc, [request(A, B)])).toEqual({ before: A, after: B });
+    });
+
+    it("reads the commit range from GitHub's deferred diff-lines markup", () => {
+        const doc = page(readFileSync(path.resolve(__dirname, "../fixtures/github-dom/pr-files-classic.html"), "utf8"));
+        expect(findDiffShas({ owner: "redhat-et", repo: "pricetag-metering", pr: "91" }, doc, [])).toEqual({
+            before: "b08921a4e275b70b9a27091dac57c1d9949ecc13",
+            after: "99ffc9f598ed396c1acd035fb5b386f6a485b1dd"
+        });
     });
 
     it("prefers the most recent request", () => {
