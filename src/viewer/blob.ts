@@ -1,7 +1,7 @@
 import { send, type ResolvedBlob } from "../shared/messages";
 import { describeScripts, getScriptPaths, loadScripts, rewriteUrls, serializeDocument } from "../core/html-prepare";
 import { byId, fetchText, prepareSide, showNotice, STATIC_SANDBOX } from "./common";
-import { setReportState, showError } from "./report";
+import { addReportFact, setReportState, showError } from "./report";
 import { confirmScripts } from "./script-consent";
 import { isTrusted, trustRepo } from "../shared/script-trust";
 
@@ -35,9 +35,11 @@ const renderScripted = (html: string): HTMLIFrameElement => {
 
 export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
     byId("blob-controls").hidden = false;
+    addReportFact(`branch name given by the page: ${hint ? "yes" : "no"}`);
     const blob = await send<ResolvedBlob>({ type: "resolve-blob", owner, repo, rest, ref: hint });
     const { ref, path, text } = blob;
     setReportState({ html: { after: text } });
+    addReportFact(`file size: ${text.length} characters`);
 
     document.title = `${path.split("/").pop()} · HTML preview`;
     byId("title").textContent = `${owner}/${repo}@${ref} · ${path}`;

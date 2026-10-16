@@ -13,7 +13,7 @@ const TEMPLATES: { [kind in ReportKind]: { file: string; prefix: string; criteri
 
 // Prefilled values travel percent-encoded in the address, which GitHub limits to roughly 8 KB. Limits count encoded
 // characters, because non-ASCII text and newlines expand to several each.
-const LIMITS = { urls: 2400, actual: 1200, probe: 600, title: 240, html: 2400 };
+const LIMITS = { urls: 1800, actual: 900, probe: 500, title: 240, html: 2000, diagnostics: 900 };
 
 // What the user chose to share of the page being viewed (never sent anywhere but into the issue form they review).
 export interface SharedHtml {
@@ -38,6 +38,8 @@ export interface ReportInput {
     version: string;
     // the page's own HTML, only when the user ticked the box
     html?: SharedHtml;
+    // what the GitHub page offered and how loading went, as the user left it in the dialog (no file contents)
+    diagnostics?: string;
 }
 
 const clip = (value: string, maxEncoded: number): string => {
@@ -79,6 +81,7 @@ export const issueUrl = (input: ReportInput): string => {
     params.set("actual", clip(error || "(describe what happened)", LIMITS.actual));
     params.set("criteria", template.criteria);
     if (input.kind === "access" && input.probe) params.set("probe", clip(input.probe, LIMITS.probe));
+    if (input.diagnostics?.trim()) params.set("diagnostics", clip(input.diagnostics.trim(), LIMITS.diagnostics));
     const budget = htmlBudget(input.html);
     for (const [side, value] of sides(input.html)) {
         // a clipped side says so, so a report is never mistaken for the whole file

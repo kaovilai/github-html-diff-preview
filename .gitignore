@@ -1,5 +1,7 @@
 node_modules/
-dist/
+dist/*
+!dist/chrome/
+!dist/firefox/
 test-results/
 playwright-report/
 .DS_Store

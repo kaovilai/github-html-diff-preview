@@ -2,7 +2,7 @@
 
 import { HTML_FILE, parsePrPath, type PrLocation } from "../core/github-urls";
 import { viewerUrl } from "../shared/viewer-url";
-import { waitForDiffShas } from "./pr-shas";
+import { diagnoseDiffShas, waitForDiffShas } from "./pr-shas";
 import { BUTTON_CLASS, BUTTON_CSS, isDarkTheme, styled } from "./dom";
 
 const NEW_DIFF_LABEL = "Diff for: ";
@@ -80,6 +80,15 @@ const findPanel = (key: string): HTMLElement | undefined => {
     return Array.from(document.querySelectorAll<HTMLElement>(`[${PANEL_ATTR}]`)).find(panel => panel.getAttribute(PANEL_ATTR) === key);
 }
 
+// What the page offered for finding the commits, handed to the preview so a problem report can carry it (names and counts only).
+const pageDiagnostics = (ctx: PrContext): string => {
+    try {
+        return diagnoseDiffShas(ctx).join("\n").slice(0, 900);
+    } catch {
+        return "diagnostics unavailable";
+    }
+}
+
 const createPanel = (ctx: PrContext, path: string, key: string, onClose: () => void): HTMLElement => {
 
     const border = "1px solid var(--borderColor-default, #d1d9e0)";
@@ -100,7 +109,7 @@ const createPanel = (ctx: PrContext, path: string, key: string, onClose: () => v
     void waitForDiffShas(ctx).then(shas => {
         // the panel may have been closed, or dropped by a GitHub re-render, while we waited
         if (!panel.isConnected) return;
-        frame.src = viewerUrl({ kind: "pr", owner: ctx.owner, repo: ctx.repo, pr: ctx.pr, path, range: ctx.range, before: shas?.before, after: shas?.after, theme: isDarkTheme() ? "dark" : "light" });
+        frame.src = viewerUrl({ kind: "pr", owner: ctx.owner, repo: ctx.repo, pr: ctx.pr, path, range: ctx.range, before: shas?.before, after: shas?.after, theme: isDarkTheme() ? "dark" : "light", diag: pageDiagnostics(ctx) });
     });
 
     const normalCss = panel.style.cssText;

@@ -34,11 +34,9 @@ Not yet published to any store. To try it:
 ```sh
 git clone https://github.com/kaovilai/github-html-diff-preview.git
 cd github-html-diff-preview
-npm ci
-npm run build
 ```
 
-Then open `chrome://extensions`, enable *Developer mode*, choose *Load unpacked*, and select `dist/chrome`. (Firefox: see [Firefox](#firefox).)
+The built extension is committed in `dist/` and kept current automatically (see [Development](#development)), so there is nothing to install or build. Open `chrome://extensions`, enable *Developer mode*, choose *Load unpacked*, and select `dist/chrome`. After a `git pull`, press the reload button on the extension's card. (Firefox: see [Firefox](#firefox).)
 
 ## Private repositories
 
@@ -60,7 +58,7 @@ No data leaves your browser except read-only requests to GitHub (`github.com`, a
 
 ## Report a problem
 
-When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, and the error shown. **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. For a private repository you can also tick **Include the page's HTML in the report** (off by default) when the file holds nothing sensitive; long HTML is copied to your clipboard to paste into the form. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Store updates take days to review, so until the fixed version reaches the store it explains how to [use the fix from source](#workaround-use-a-fix-from-source) as a temporary workaround.
+When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, the error shown, and **technical details** (what the GitHub page offered for finding the commits and how loading went: names, counts and outcomes only, never file contents; shown in the dialog so you can edit or clear them). **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. For a private repository you can also tick **Include the page's HTML in the report** (off by default) when the file holds nothing sensitive; long HTML is copied to your clipboard to paste into the form. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Store updates take days to review, so until the fixed version reaches the store it explains how to [use the fix from source](#workaround-use-a-fix-from-source) as a temporary workaround.
 
 ## Workaround: use a fix from source
 
@@ -69,15 +67,12 @@ GitHub changes its pages without notice, and when that breaks the extension the 
 ```sh
 git clone https://github.com/kaovilai/github-html-diff-preview.git
 cd github-html-diff-preview
-git fetch origin pull/<number>/head:fix && git checkout fix   # the draft fix linked from your issue; skip both to use main
-npm ci && npm run build:chrome
+git fetch origin pull/<number>/head:fix && git checkout fix   # the draft fix linked from your issue; skip this line to use main
 ```
 
-Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and select `dist/chrome`. If you also have the store version installed, turn it off while the unpacked one is on (two copies add two buttons).
+`dist/` is committed, so no Node or build step is needed. Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and select `dist/chrome` (already loaded it? press the reload button on its card after switching branches). If you also have the store version installed, turn it off while the unpacked one is on (two copies add two buttons).
 
 **Once the store version includes the fix, go back to it:** remove the unpacked extension and turn the store one back on.
-
-Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and select `dist/chrome`.
 
 ## Permissions
 
@@ -122,6 +117,8 @@ npm run test:e2e      # builds, then drives Chromium with the extension loaded
 LIVE=1 npx playwright test live   # optional: smoke test against the real github.com
 npm run zip           # reproducible store zips in dist/
 ```
+
+`dist/chrome` and `dist/firefox` are committed build output (zips are not), so the extension can be loaded from a clone as it is. Run `npm run build` and commit the result with a change to `src/` or `static/`; the [Rebuild dist](.github/workflows/rebuild-dist.yml) workflow rebuilds and commits it on `main` for anything that landed without it (Dependabot bumps, the issue helper's pull requests). The build is deterministic, so a rebuild with no source change produces no diff.
 
 The end-to-end tests run Chromium with the unpacked extension against a fake `github.com` and `raw` served by Playwright (a request to `api.github.com` fails the test) (including the extension's own network requests), so they need no network and no GitHub account.
 

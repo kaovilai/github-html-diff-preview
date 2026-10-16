@@ -3,7 +3,7 @@ import { isSha } from "../core/github-urls";
 import { loadViewMode, saveViewMode, type ViewMode } from "./view-mode";
 import { buildViews, type Side as SideName, type Views } from "../core/html-diff";
 import { rewriteUrls } from "../core/html-prepare";
-import { setReportState } from "./report";
+import { addReportFact, setReportState } from "./report";
 import { byId, fetchText, prepareSide, showNotice, STATIC_SANDBOX, type PreparedSide } from "./common";
 
 const CHANGE_SELECTOR = "[data-hp-added], [data-hp-removed], [data-hp-modified], hp-del";
@@ -75,8 +75,10 @@ const resolve = async ({ owner, repo, path, before, after }: DiffParams): Promis
 export const runDiff = async (params: DiffParams) => {
     const { owner, repo, path } = params;
     byId("diff-controls").hidden = false;
+    addReportFact(`commits given by the page: ${params.before && params.after ? "yes" : "no"}`);
 
     const info = await resolve(params);
+    addReportFact(`file status from GitHub's diff: ${info.change ? info.change.status : "not found"}`);
     const beforePath = info.change?.previous || path;
     const wanted = {
         before: info.change?.status !== "added" && !!info.before,
@@ -103,6 +105,7 @@ export const runDiff = async (params: DiffParams) => {
     const change = info.change ?? { status };
     const [beforeHtml, afterHtml] = [beforeResult.html, afterResult.html];
     setReportState({ html: { before: hasBefore ? beforeHtml : undefined, after: hasAfter ? afterHtml : undefined } });
+    addReportFact(`file sizes: before ${hasBefore ? beforeHtml.length : "none"}, after ${hasAfter ? afterHtml.length : "none"} characters`);
     const [before, after] = await Promise.all([
         prepareSide({ owner, repo, ref: info.before || "", path: beforePath, html: beforeHtml }),
         prepareSide({ owner, repo, ref: info.after, path, html: afterHtml })

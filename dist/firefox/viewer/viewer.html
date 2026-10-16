@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HTML preview</title>
+    <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+    <header id="toolbar">
+        <div id="diff-controls" class="controls" hidden>
+            <div class="group" role="group" aria-label="View mode">
+                <button id="mode-inline" class="seg" type="button">Inline</button>
+                <button id="mode-split" class="seg" type="button">Side by side</button>
+            </div>
+            <div class="legend">
+                <span class="swatch added"></span>Added
+                <span class="bubble">&minus;</span>Removed (click it)
+                <span class="swatch modified"></span>Changed
+            </div>
+            <span id="stats"></span>
+            <div class="group" role="group" aria-label="Navigate changes">
+                <button id="prev" class="seg" type="button" title="Previous change">&uarr;</button>
+                <button id="next" class="seg" type="button" title="Next change">&darr;</button>
+            </div>
+        </div>
+        <div id="blob-controls" class="controls" hidden>
+            <strong id="title"></strong>
+            <a id="github-link" target="_blank" rel="noopener noreferrer">Open on GitHub</a>
+            <span class="spacer"></span>
+            <label id="scripts-label" title="Runs the page's own JavaScript in an isolated sandbox. Only enable for files you trust.">
+                <input id="run-scripts" type="checkbox"> Run scripts (untrusted)
+            </label>
+        </div>
+        <button id="report" class="seg" type="button" title="Open a prefilled issue form on GitHub">Report a problem</button>
+    </header>
+    <dialog id="report-dialog" aria-labelledby="report-title">
+        <form method="dialog" id="report-form">
+            <h2 id="report-title">Report a problem</h2>
+            <p>This opens a new issue form on GitHub with the details below filled in. You review it and press Submit yourself; nothing is sent from here. Issues are public, so remove anything private (such as a private repository&rsquo;s name) from the address first.</p>
+            <label for="report-kind">What went wrong?</label>
+            <select id="report-kind">
+                <option value="access">The page could not be loaded (not found, access, rate limit)</option>
+                <option value="render">The preview or diff looks wrong</option>
+                <option value="other">Something else</option>
+            </select>
+            <label for="report-urls">GitHub page address (edit or remove anything private)</label>
+            <textarea id="report-urls" rows="3"></textarea>
+            <label for="report-diagnostics">Technical details from the page (names and counts only, no file contents; edit or clear)</label>
+            <textarea id="report-diagnostics" rows="5"></textarea>
+            <label class="check" for="report-include-html">
+                <input id="report-include-html" type="checkbox"> Include the page's HTML in the report
+            </label>
+            <p id="report-html-hint" class="muted"></p>
+            <p id="report-error" class="muted"></p>
+            <p class="muted">If GitHub changed its pages, a fix may exist before the store update ships. The issue will say how to <a href="https://github.com/kaovilai/github-html-diff-preview/blob/main/README.md#workaround-use-a-fix-from-source" target="_blank" rel="noopener noreferrer">use it from source</a> as a temporary workaround.</p>
+            <div class="actions">
+                <button id="report-cancel" class="seg" type="button">Cancel</button>
+                <button id="report-open" class="seg primary" type="button">Open prefilled issue on GitHub</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="scripts-dialog" aria-labelledby="scripts-title">
+        <form method="dialog" id="scripts-form">
+            <h2 id="scripts-title">Run this page's scripts?</h2>
+            <p>The scripts in this file from <strong id="scripts-repo"></strong> will run in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows.</p>
+            <div id="scripts-list"></div>
+            <p class="muted">&ldquo;Always allow&rdquo; skips this question for every file in this repository, including scripts added later. Undo it any time on the extension's options page.</p>
+            <div class="actions">
+                <button id="scripts-cancel" class="seg" type="button">Cancel</button>
+                <button id="scripts-once" class="seg primary" type="button">Run this time</button>
+                <button id="scripts-always" class="seg" type="button">Always allow this repository</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="script-warning" hidden>Scripts are running in an isolated sandbox with no access to GitHub or this extension, but they can still make network requests and open windows. Only use this on files you trust.<span id="script-warning-always" hidden> Scripts are always allowed for this repository; <a href="../options/options.html" target="_blank" rel="noopener noreferrer">change this in the options</a>.</span></div>
+    <div id="notice" hidden></div>
+    <main id="stage"><div id="status">Loading&hellip;</div></main>
+    <script src="../viewer.js"></script>
+</body>
+</html>

@@ -48,6 +48,12 @@ body:
       description: "Filled in by the extension's \"Include the page's HTML\" option, for private repositories. This issue is public, so check that it holds nothing sensitive."
       render: html
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Technical details from the page (optional)
+      description: Filled in by the extension's Report a problem button. Names, counts and outcomes only, no file contents.
+      render: text
+  - type: textarea
     id: actual
     attributes:
       label: The exact message you see

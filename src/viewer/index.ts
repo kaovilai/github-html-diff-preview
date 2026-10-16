@@ -41,6 +41,6 @@ const run = async () => {
     }
 }
 
-initReport(sourcePage());
+initReport({ ...sourcePage(), diagnostics: (params.get("diag") ?? "").slice(0, 900), facts: [`preview: ${params.get("kind") ?? "none"}`] });
 byId("status").textContent = "Loading…";
 run().catch(showError);

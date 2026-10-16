@@ -2,6 +2,9 @@
 
 ## 0.2.1
 
+- **Report a problem** now carries technical details about the GitHub page (layout, which sources of commit information it offered and why each worked or not, sizes, status codes: names and counts only), shown in the dialog and editable, so a page change can be diagnosed without the page.
+- Pull request previews now work on the signed-in Files changed page, which names the compared commits only in its embedded data (issue #4).
+- The built `dist/chrome` and `dist/firefox` are committed and rebuilt automatically on `main`, so the extension loads straight from a clone.
 - **Run scripts (untrusted)** now asks for confirmation and lists the script addresses that would run (repository scripts, the inline-script count, and remote scripts that stay blocked). Choose **Run this time** or **Always allow this repository**; the options page lists allowed repositories so each can be removed.
 - **Report a problem** can include the page's HTML (off by default each time) for private repositories where a link would not help. Long HTML is clipped in the form and copied in full to the clipboard.
 - Fixed the single-file preview showing the page in a narrow box (about a quarter of the window) instead of filling it. A test now checks the frame fills the window, with and without scripts.

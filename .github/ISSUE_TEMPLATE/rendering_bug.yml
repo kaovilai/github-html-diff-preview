@@ -41,6 +41,12 @@ body:
       description: The smallest HTML that shows the problem as the *new* version, or the file itself for a single preview. Relative assets (`css/site.css`, `img/logo.png`) are fine, mention their paths below.
       render: html
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Technical details from the page (optional)
+      description: Filled in by the extension's Report a problem button. Names, counts and outcomes only, no file contents.
+      render: text
+  - type: textarea
     id: actual
     attributes:
       label: What actually happens

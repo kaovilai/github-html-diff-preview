@@ -1,0 +1,49 @@
+name: Rebuild dist
+
+# dist/chrome and dist/firefox are committed so the extension can be loaded straight from a clone (the "use a fix from
+# source" workaround) with no Node or build step. Whatever lands on main, whether a person, Dependabot or the issue
+# helper changed it, this rebuilds and commits the output when it differs. The build is deterministic.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "static/**"
+      - "scripts/build.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - "dist/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild-dist
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    # a commit made with the workflow token does not start another run, so this cannot loop
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Commit the rebuilt output
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain -- dist/chrome dist/firefox)" ]; then
+            echo "dist is up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/chrome dist/firefox
+          git commit -s -m "chore: rebuild dist"
+          git pull --rebase origin main
+          git push origin HEAD:main

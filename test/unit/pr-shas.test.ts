@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { findDiffShas } from "../../src/content/pr-shas";
+import { diagnoseDiffShas, findDiffShas } from "../../src/content/pr-shas";
 
 const A = "a".repeat(40), B = "b".repeat(40), C = "c".repeat(40);
 const entry = (name: string) => ({ name }) as PerformanceEntry;
@@ -118,5 +118,48 @@ describe("findDiffShas", () => {
         const doc = page(`<a href="/o/r.x/blob/${B}/x.html">x</a>`);
         expect(findDiffShas({ owner: "o", repo: "r.x", pr: "5" }, doc, [request(A, B, "o/rZx")])).toBeNull();
         expect(findDiffShas({ owner: "o", repo: "r.x", pr: "5" }, doc, [request(A, B, "o/r.x")])).toEqual({ before: A, after: B });
+    });
+});
+
+describe("diagnoseDiffShas", () => {
+    const ctx = { owner: "redhat-et", repo: "pricetag-metering", pr: "91" };
+    const read = (name: string) => readFileSync(path.resolve(__dirname, `../fixtures/github-dom/${name}`), "utf8");
+
+    it("explains a successful find on the signed-in page: which source worked and the layout", () => {
+        const lines = diagnoseDiffShas(ctx, page(read("pr-files-react-embedded.html")), []);
+        expect(lines).toContain("commit discovery: found");
+        expect(lines).toContain("page layout: signed-in (grid)");
+        expect(lines).toContain("address: whole pull request");
+        expect(lines).toContain("embedded data: ok");
+        expect(lines.find(line => line.startsWith("embedded route keys:"))).toContain("diffContents");
+    });
+
+    it("explains why nothing was found, so a report is useful without the page", () => {
+        const bare = page('<div role="grid" aria-label="Diff for: a.html"></div>');
+        expect(diagnoseDiffShas(ctx, bare, [entry("https://github.com/x/y/page_data/threads")])).toEqual([
+            "commit discovery: not found",
+            "page layout: signed-in (grid)",
+            "address: whole pull request",
+            "diff requests seen: 0 (of 1 resources)",
+            "deferred-diff-lines elements: 0",
+            "embedded data: absent"
+        ]);
+        const wrong = diagnoseDiffShas({ ...ctx, pr: "92" }, page(read("pr-files-react-embedded.html")), []);
+        expect(wrong).toContain("embedded data: present, for another pull request");
+        const ranged = diagnoseDiffShas({ ...ctx, range: "1234567..89abcde" }, page(read("pr-files-react-embedded.html")), []);
+        expect(ranged).toContain("embedded data: present, commits disagree with the address");
+        expect(ranged).toContain("address: commit range");
+    });
+
+    it("recognises the classic layout and counts deferred markup", () => {
+        const lines = diagnoseDiffShas(ctx, page(read("pr-files-classic.html")), []);
+        expect(lines).toContain("page layout: classic");
+        expect(lines.find(line => line.startsWith("deferred-diff-lines elements:"))).toMatch(/: [1-9]/);
+    });
+
+    it("carries names and counts only: nothing from the repository, its files or the page text", () => {
+        const text = diagnoseDiffShas(ctx, page(read("pr-files-react-embedded.html")), [request(A, B, "redhat-et/pricetag-metering")]).join("\n");
+        expect(text).not.toMatch(/welcome\.html|pricetag|redhat|[0-9a-f]{40}|https?:/i);
+        expect(text.length).toBeLessThan(900);
     });
 });

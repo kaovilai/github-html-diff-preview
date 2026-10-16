@@ -68,6 +68,14 @@ describe("issue forms", () => {
         }
     });
 
+    it("every form the report button can open takes the page diagnostics as an optional text field", () => {
+        for (const name of ["access_problem.yml", "bug_report.yml", "rendering_bug.yml"]) {
+            const field = load(name).body.find(f => f.id === "diagnostics");
+            expect(field, name).toBeTruthy();
+            expect(field?.validations?.required, name).not.toBe(true);
+        }
+    });
+
     it("rendering and button forms collect what the helper needs to reproduce offline", () => {
         const ids = (name: string) => load(name).body.map(field => field.id);
         expect(ids("rendering_bug.yml")).toEqual(expect.arrayContaining(["urls", "kind", "before_html", "after_html", "actual", "criteria"]));

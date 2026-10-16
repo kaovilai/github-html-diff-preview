@@ -1,0 +1,73 @@
+:root { --bg: #fff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0; --bar: #f6f8fa; --active: #0969da; --link: #0969da; --error: #cf222e; }
+/* white button text needs 4.5:1 on the active segment, so dark mode uses a deeper blue there than for links */
+body[data-theme="dark"] { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --border: #3d444d; --bar: #151b23; --active: #1f6feb; --link: #4493f8; --error: #ff7b72; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; background: var(--bg); color: var(--fg); font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+#toolbar { display: flex; align-items: center; gap: 12px; padding: 6px 10px; background: var(--bar); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.group { display: inline-flex; }
+.seg { padding: 3px 10px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); cursor: pointer; font: inherit; }
+.seg + .seg { margin-left: -1px; }
+.seg:first-child { border-radius: 6px 0 0 6px; }
+.seg:last-child { border-radius: 0 6px 6px 0; }
+.seg.active { background: var(--active); border-color: var(--active); color: #fff; }
+.legend { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.swatch { width: 12px; height: 12px; border-radius: 3px; margin-left: 6px; }
+.swatch.added { background: rgba(46, 160, 67, .35); border: 2px solid #1a7f37; }
+.swatch.modified { border: 2px dashed #bf8700; }
+.bubble { margin-left: 6px; width: 16px; height: 16px; border-radius: 50%; background: #cf222e; color: #fff; text-align: center; line-height: 16px; font-weight: 700; }
+#stats { flex: 1; text-align: right; color: var(--muted); }
+#notice { padding: 6px 10px; background: rgba(9, 105, 218, .12); border-bottom: 1px solid var(--border); }
+#stage { flex: 1; min-height: 0; display: flex; }
+#status { margin: auto; color: var(--muted); }
+#status.error { color: var(--error); max-width: 480px; text-align: center; }
+.pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pane + .pane { border-left: 1px solid var(--border); }
+.pane-title { padding: 4px 10px; background: var(--bar); border-bottom: 1px solid var(--border); color: var(--muted); }
+/* single-file preview puts the frame straight into the stage; without a size it would stay at the default 300px */
+#stage > iframe, .pane iframe { flex: 1; min-width: 0; width: 100%; border: 0; background: #fff; }
+.placeholder { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+[hidden] { display: none !important; }
+.controls { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
+.spacer { flex: 1; }
+#toolbar > .seg { margin-left: auto; border-radius: 6px; }
+#toolbar a { color: var(--link); }
+#script-warning a { color: inherit; text-decoration: underline; }
+#script-warning { padding: 6px 10px; background: rgba(191, 135, 0, .18); border-bottom: 1px solid var(--border); }
+
+/* touch (or a phone-sized screen): no hover, fingertip-sized controls (44px) */
+@media (pointer: coarse), (max-width: 720px) {
+    .seg { min-width: 44px; min-height: 44px; padding: 0 16px; font-size: 14px; }
+    #toolbar a { display: inline-flex; align-items: center; min-height: 44px; }
+    #scripts-label { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; }
+    #run-scripts { width: 24px; height: 24px; margin: 0; }
+}
+
+/* narrow screens: stack side by side so each page gets the full width, let the toolbar wrap */
+@media (max-width: 720px) {
+    #stage { flex-direction: column; }
+    .pane + .pane { border-left: 0; border-top: 1px solid var(--border); }
+    #stats { flex-basis: 100%; text-align: left; order: 3; }
+    .legend { flex-wrap: wrap; }
+}
+
+.error-actions { margin-top: 12px; }
+dialog { max-width: 560px; width: calc(100% - 32px); padding: 16px 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--fg); }
+dialog::backdrop { background: rgba(0, 0, 0, .5); }
+dialog h2 { margin: 0 0 8px; font-size: 16px; }
+dialog label { display: block; margin: 12px 0 4px; font-weight: 600; }
+dialog select, dialog textarea { width: 100%; padding: 6px 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+dialog label.check { display: flex; gap: 8px; align-items: center; min-height: 24px; }
+dialog h3 { margin: 12px 0 4px; font-size: 12px; }
+dialog ul { margin: 0; padding-left: 18px; }
+dialog li { overflow-wrap: anywhere; }
+#scripts-list { max-height: 40vh; overflow: auto; }
+dialog .muted { color: var(--muted); }
+dialog .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+.seg.primary { background: var(--active); border-color: var(--active); color: #fff; }
+@media (pointer: coarse), (max-width: 720px) {
+    dialog select { min-height: 44px; font-size: 16px; }
+    dialog textarea { font-size: 16px; }
+}
+dialog .seg, .error-actions .seg { border-radius: 6px; margin-left: 0; }
+dialog a { color: var(--link); }

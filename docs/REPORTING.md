@@ -13,7 +13,9 @@ Pick the issue form that matches. Each one asks for the same three things so a r
 | Cannot load a file or diff | "Not found", access denied or a rate limit | The output of **Test access**, repository visibility, SSO |
 | Other bug / Feature request | Anything else | A URL and criteria |
 
-The quickest way is **Report a problem** inside the preview: it opens one of these forms prefilled (the GitHub page address you confirm, the error shown, your browser and extension version) and you press Submit yourself. Never paste a token, cookie or other secret. Private repository contents cannot be examined by the automation; the minimal HTML fields exist so you can share only what is needed.
+The quickest way is **Report a problem** inside the preview: it opens one of these forms prefilled (the GitHub page address you confirm, the error shown, technical details about the page, your browser and extension version) and you press Submit yourself. Never paste a token, cookie or other secret. Private repository contents cannot be examined by the automation; the minimal HTML fields exist so you can share only what is needed.
+
+The **technical details** are names, counts and outcomes only (page layout, which sources of commit information the page offered and why each did or did not work, file sizes, status codes). They contain no file contents or file names, they are shown in the dialog, and you can edit or clear them before opening the form. They let the helper diagnose a page change without seeing the page.
 
 For a **private repository**, where a link would not help, tick **Include the page's HTML in the report** in the dialog (off by default each time). The file's HTML (both sides of a diff) is put into the form's HTML fields so the helper can reproduce the problem from it. Issues are public: tick it only if the HTML holds nothing sensitive, and review the field before you submit. If the HTML is too long for the address, the start is prefilled and marked as clipped, and the full text is copied to your clipboard to paste over it.
 

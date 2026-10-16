@@ -11,6 +11,10 @@ export interface ReportState {
     status?: number;
     // the HTML of the file(s) being viewed, offered in the dialog; absent until it has loaded
     html?: SharedHtml;
+    // what the GitHub page offered (from the content script), as lines of names and counts, no file contents
+    diagnostics?: string;
+    // what the preview itself learned while loading, in the same spirit
+    facts?: string[];
 }
 
 let state: ReportState | undefined;
@@ -30,6 +34,13 @@ const probeText = async (): Promise<string | undefined> => {
 }
 
 // Shows a load failure and remembers it, so a report made from here carries the message and a sensible category.
+// A short fact about how loading went (a stage reached, a size, a status); never file contents or names.
+export const addReportFact = (fact: string) => {
+    setReportState({ facts: [...(state?.facts ?? []), fact] });
+}
+
+const diagnosticsText = (): string => [...(state?.diagnostics ? state.diagnostics.split("\n") : []), ...(state?.facts ?? []), ...(state?.status ? [`error status: ${state.status}`] : [])].join("\n");
+
 export const showError = (error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
     const status = typeof (error as { status?: unknown } | null)?.status === "number" ? (error as { status: number }).status : undefined;
@@ -62,6 +73,7 @@ export const openReportDialog = () => {
     byId("report-html-hint").textContent = has
         ? "Publishes the file's HTML in the issue. Tick it when the repository is private and a link would not help, and only if the HTML holds nothing sensitive."
         : "No HTML has been loaded, so there is nothing to include.";
+    byId<HTMLTextAreaElement>("report-diagnostics").value = diagnosticsText();
     byId("report-error").textContent = current.error ? `Error shown: ${current.error}` : "No error was shown; describe the problem on the GitHub form.";
     byId<HTMLDialogElement>("report-dialog").showModal();
 }
@@ -94,6 +106,7 @@ export const initReport = (initial: ReportState) => {
                 error: state?.error,
                 probe: kind === "access" ? await probeText() : undefined,
                 html,
+                diagnostics: byId<HTMLTextAreaElement>("report-diagnostics").value,
                 browser: describeBrowser(navigator.userAgent),
                 version: chrome.runtime.getManifest().version
             });

@@ -8,6 +8,12 @@ body:
       label: GitHub URL(s) involved (optional)
       description: One per line. Public URLs let the automated helper look at the same page.
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Technical details from the page (optional)
+      description: Filled in by the extension's Report a problem button. Names, counts and outcomes only, no file contents.
+      render: text
+  - type: textarea
     id: actual
     attributes:
       label: What happens

@@ -93,6 +93,23 @@ describe("sharing the page's HTML", () => {
     });
 });
 
+describe("diagnostics", () => {
+    it("goes into every report, as the user left it, and is dropped when they cleared it", () => {
+        const url = new URL(issueUrl({ ...base, kind: "render", diagnostics: "  commit discovery: not found\nembedded data: absent \n" }));
+        expect(url.searchParams.get("diagnostics")).toBe("commit discovery: not found\nembedded data: absent");
+        expect(new URL(issueUrl({ ...base, kind: "render", diagnostics: "  \n" })).searchParams.has("diagnostics")).toBe(false);
+        expect(new URL(issueUrl({ ...base, kind: "access" })).searchParams.has("diagnostics")).toBe(false);
+    });
+
+    it("keeps the whole address under GitHub's limit with every field at its maximum, in any script", () => {
+        for (const filler of ["x\n", "文", "%&=+ "]) {
+            const big = filler.repeat(20000);
+            const url = issueUrl({ ...base, kind: "access", urls: big, error: big, probe: big, diagnostics: big, html: { before: big, after: big } });
+            expect(url.length, filler).toBeLessThan(8000);
+        }
+    });
+});
+
 describe("defaultKind", () => {
     it("treats not-found, access and rate-limit failures as access problems", () => {
         for (const status of [401, 403, 404, 429]) expect(defaultKind(status, true)).toBe("access");

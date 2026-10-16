@@ -103,6 +103,17 @@ test.describe("commits taken from GitHub's own page", () => {
         const panel = page.frameLocator('iframe[title^="HTML diff preview"]');
         await expect(panel.locator("#status.error")).toContainText("did not say which commits");
         expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
+
+        // the report carries what this page offered, so the failure can be understood without seeing the page
+        await panel.locator("#report-from-error").click();
+        const details = await panel.locator("#report-diagnostics").inputValue();
+        expect(details).toContain("commit discovery: not found");
+        expect(details).toContain("address: commit range");
+        expect(details).toMatch(/diff requests seen: 1 \(of \d+ resources\)/);
+        expect(details).toContain("embedded data: absent");
+        expect(details).toContain("commits given by the page: no");
+        // names and counts only
+        expect(details).not.toMatch(/docs\/a\.html|[0-9a-f]{40}|https?:/);
     });
 });
 
@@ -203,6 +214,31 @@ test.describe("reporting a problem", () => {
         await expect(viewer.locator("#status.error")).toContainText("File not found");
         await viewer.locator("#report-from-error").click();
         await expect(viewer.locator("#report-include-html")).toBeDisabled();
+    });
+
+    test("the dialog carries what the page offered and how loading went, editable, into the form", async ({ context, extensionId }) => {
+        await fakeGithub(context, { files: { "main/a.html": "<body><p>ok</p></body>" } });
+        const viewer = await context.newPage();
+        const diag = encodeURIComponent("commit discovery: not found\nembedded data: absent");
+        await viewer.goto(`chrome-extension://${extensionId}/viewer/viewer.html#kind=blob&owner=o&repo=r&rest=main%2Fa.html&diag=${diag}`);
+        await expect(viewer.frameLocator("iframe").locator("p")).toHaveText("ok");
+        await viewer.evaluate(() => {
+            const w = window as unknown as { __opened: string[] };
+            w.__opened = [];
+            chrome.tabs.create = (async (options: chrome.tabs.CreateProperties) => { w.__opened.push(String(options.url)); return {} as chrome.tabs.Tab; }) as typeof chrome.tabs.create;
+        });
+        await viewer.locator("#report").click();
+        const box = viewer.locator("#report-diagnostics");
+        // from the page, then what the preview learned itself
+        await expect(box).toHaveValue(/commit discovery: not found\nembedded data: absent\npreview: blob\nbranch name given by the page: no\nfile size: \d+ characters/);
+        // no file content or file name leaks into it
+        expect(await box.inputValue()).not.toContain("a.html");
+
+        await box.fill("embedded data: absent\n(removed the rest)");
+        await viewer.locator("#report-open").click();
+        await expect.poll(() => viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened.length)).toBe(1);
+        const url = new URL(await viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened[0]));
+        expect(url.searchParams.get("diagnostics")).toBe("embedded data: absent\n(removed the rest)");
     });
 
     test("cancel sends nothing, and the always-visible button works without an error", async ({ context }) => {
