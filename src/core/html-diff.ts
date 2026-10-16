@@ -74,6 +74,11 @@ details[open]>summary{background:#82071e}
 .src{border-top:1px solid #ffcecb}
 .src>summary{all:unset;display:block;cursor:pointer;padding:6px 10px;color:#57606a}
 pre{margin:0;padding:8px 10px;overflow:auto;background:#f6f8fa;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+/* touch or a phone-sized screen: a 44px hit area around the same 18px bubble (padding offset by a negative margin, so layout does not move) */
+@media (pointer:coarse),(max-width:720px){
+summary{box-sizing:content-box;padding:13px;margin:-13px;background-clip:content-box;box-shadow:none}
+.src>summary{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
 `;
 
 const sigCache = new WeakMap<Node, string>();

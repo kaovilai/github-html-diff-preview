@@ -1,0 +1,50 @@
+name: Bug report
+description: Something does not work, or looks wrong
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please check [Troubleshooting](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md) first. **Never paste a personal access token or any other secret.**
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: GitHub page where it happened
+      description: A file or pull request URL. Leave blank for a private repository you cannot share.
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Repository visibility
+      options: [Public, Private, Not sure]
+    validations:
+      required: true
+  - type: dropdown
+    id: feature
+    attributes:
+      label: What were you doing?
+      options: [Previewing a single HTML file, Pull request diff preview, Options page or token, Other]
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Chrome 141, Firefox 140, ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: 0.1.0
+  - type: textarea
+    id: probe
+    attributes:
+      label: Output of "Test access" (options page)
+      description: Run it with the file's URL and paste the result. It contains no secrets.
+      render: text

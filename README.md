@@ -109,7 +109,13 @@ The end-to-end tests run Chromium with the unpacked extension against a fake `gi
 
 Source layout: `src/background` (worker), `src/content` (GitHub page integration), `src/viewer` (preview page), `src/options`, `src/sandbox` (opt-in scripts page), `src/core` (diffing, sanitizing, fetching; unit tested).
 
-Store listing material is in [`store/`](store/).
+Store listing material is in [`store/`](store/). Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+
+### Automation
+
+- **Dependabot** opens one grouped pull request for all npm and GitHub Actions updates each week; `dependabot-automerge.yml` squash-merges it once CI has passed on that exact commit.
+- **CI** runs type checks, lint, unit tests, end-to-end tests and an accessibility suite: WCAG 2.2 AA checks with axe on every page the extension ships, text contrast of every button in every state (rest, hover, focus, selected) in light and dark mode, and touch usability (44px targets, no sideways scrolling, tap-only operation) in a phone-sized touch viewport.
+- **Issue helper** (`.github/workflows/issue-responder.md`, a [GitHub Agentic Workflow](https://github.github.com/gh-aw/)) answers new issues and follow-up comments from people without write access, using the repository's docs and code, and opens a draft pull request when a report is a confirmed small bug. It needs a `COPILOT_GITHUB_TOKEN` repository secret. After editing its frontmatter run `gh aw compile`; a scheduled check fails when the compiled lock file is stale.
 
 ## License
 

@@ -6,5 +6,9 @@ export default defineConfig({
     retries: process.env.CI ? 1 : 0,
     workers: 1,
     reporter: process.env.CI ? [["github"], ["list"]] : "list",
-    use: { trace: "retain-on-failure" }
+    use: { trace: "retain-on-failure" },
+    projects: [
+        { name: "e2e", testIgnore: /a11y\.spec\.ts/ },
+        { name: "a11y", testMatch: /a11y\.spec\.ts/ }
+    ]
 });

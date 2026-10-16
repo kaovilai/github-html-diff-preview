@@ -1,0 +1,45 @@
+name: Dependabot auto-merge
+
+# Merges Dependabot's grouped update PR after the CI workflow has succeeded on that exact commit.
+# Runs from workflow_run so it has a token that can write, but never checks out or runs the PR's code.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    steps:
+      - name: Merge the PR that CI just passed on
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          set -euo pipefail
+          if [ -z "$PR" ]; then
+            echo "No pull request is associated with this run (for example a fork); nothing to merge."
+            exit 0
+          fi
+          read -r author state head_repo < <(gh pr view "$PR" --json author,state,headRepository,headRepositoryOwner \
+            --jq '[.author.login, .state, (.headRepositoryOwner.login + "/" + .headRepository.name)] | @tsv')
+          if [ "$author" != "app/dependabot" ] && [ "$author" != "dependabot[bot]" ]; then
+            echo "PR #$PR was opened by $author, not Dependabot; leaving it alone."
+            exit 0
+          fi
+          if [ "$state" != "OPEN" ] || [ "$head_repo" != "$GH_REPO" ]; then
+            echo "PR #$PR is $state from $head_repo; leaving it alone."
+            exit 0
+          fi
+          # --match-head-commit refuses the merge if anything was pushed after the commit CI tested
+          gh pr merge "$PR" --squash --delete-branch --match-head-commit "$HEAD_SHA"

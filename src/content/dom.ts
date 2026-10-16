@@ -17,3 +17,14 @@ export const BUTTON_CSS = [
     "background:var(--button-default-bgColor-rest, var(--bgColor-muted, #f6f8fa))",
     "color:var(--fgColor-default, #1f2328)"
 ].join(";");
+
+export const BUTTON_CLASS = "hp-btn";
+
+// Inline styles cannot express media queries, so touch sizing lives in a stylesheet (the !important beats the inline height).
+export const ensureStyles = () => {
+    if (document.getElementById("hp-content-style")) return;
+    const style = document.createElement("style");
+    style.id = "hp-content-style";
+    style.textContent = `@media (pointer: coarse) { .${BUTTON_CLASS} { min-height: 44px !important; height: auto !important; min-width: 44px !important; padding-left: 16px !important; padding-right: 16px !important; font-size: 14px !important; } }`;
+    (document.head || document.documentElement).appendChild(style);
+}

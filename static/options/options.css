@@ -1,13 +1,24 @@
+/* explicit canvas colors so contrast tools see the real background in both color schemes */
 :root { color-scheme: light dark; }
-body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; }
+body { background: Canvas; color: CanvasText; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; }
 main { max-width: 640px; margin: 0 auto; }
 h1 { font-size: 20px; margin: 0 0 4px; }
 h2 { font-size: 15px; margin: 24px 0 8px; }
-.lead, .hint { color: GrayText; margin: 4px 0 8px; }
+.lead, .hint { color: color-mix(in srgb, CanvasText 72%, Canvas); margin: 4px 0 8px; }
+a { color: LinkText; }
 label { display: block; font-weight: 600; margin: 8px 0 4px; }
 input, select { width: 100%; box-sizing: border-box; padding: 6px 8px; font: inherit; }
 .row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
 button { padding: 5px 12px; font: inherit; cursor: pointer; }
-#saved { color: #1a7f37; }
+#saved { color: light-dark(#1a7f37, #56d364); }
 pre { padding: 8px; background: color-mix(in srgb, CanvasText 8%, Canvas); overflow: auto; white-space: pre-wrap; }
 code { font-family: ui-monospace, Menlo, monospace; }
+
+@media (pointer: coarse), (max-width: 720px) {
+    button, select, input { min-height: 44px; font-size: 16px; }
+    button { padding: 0 18px; }
+}
+@media (max-width: 480px) {
+    body { padding: 16px; }
+    .row { flex-wrap: wrap; }
+}

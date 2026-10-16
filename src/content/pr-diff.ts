@@ -3,7 +3,7 @@
 import { HTML_FILE, parsePrPath, type PrLocation } from "../core/github-urls";
 import { viewerUrl } from "../shared/viewer-url";
 import { waitForDiffShas } from "./pr-shas";
-import { BUTTON_CSS, isDarkTheme, styled } from "./dom";
+import { BUTTON_CLASS, BUTTON_CSS, isDarkTheme, styled } from "./dom";
 
 const NEW_DIFF_LABEL = "Diff for: ";
 const BUTTON_ATTR = "data-hp-preview-button";
@@ -91,6 +91,7 @@ const createPanel = (ctx: PrContext, path: string, key: string, onClose: () => v
     const fullscreen = styled("button", BUTTON_CSS, "Full screen");
     const close = styled("button", BUTTON_CSS, "Close");
     fullscreen.type = close.type = "button";
+    fullscreen.className = close.className = BUTTON_CLASS;
     bar.append(title, fullscreen, close);
 
     const frame = styled("iframe", "flex:1;width:100%;border:0");
@@ -151,7 +152,7 @@ export const scanPrPage = () => {
         if (!buttons.has(key)) {
             const button = styled("button", BUTTON_CSS, "Preview");
             button.type = "button";
-            if (file.buttonClass) button.className = file.buttonClass;
+            button.className = `${BUTTON_CLASS} ${file.buttonClass}`.trim();
             button.setAttribute(BUTTON_ATTR, key);
             button.title = "Preview this HTML file with added and removed parts highlighted";
             button.onclick = event => {

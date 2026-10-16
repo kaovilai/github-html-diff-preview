@@ -1,10 +1,12 @@
 import { scanBlobPage } from "./blob";
+import { ensureStyles } from "./dom";
 import { scanPrPage } from "./pr-diff";
 import { findRef } from "./ref";
 
 let scheduled = false;
 const scan = () => {
     scheduled = false;
+    try { ensureStyles(); } catch { /* no document yet */ }
     try { scanBlobPage(); } catch { /* GitHub markup changed; leave the page alone */ }
     try { scanPrPage(); } catch { /* same */ }
 }

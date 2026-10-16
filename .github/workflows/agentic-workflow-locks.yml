@@ -1,0 +1,45 @@
+name: Agentic Workflow Lock Files
+
+# The *.lock.yml files are compiled from the *.md workflows by gh-aw. Fail when they are stale, either because
+# someone edited the frontmatter without recompiling or because a newer gh-aw would compile them differently.
+on:
+  pull_request:
+    paths: [".github/workflows/*.md", ".github/workflows/*.lock.yml"]
+  push:
+    branches: [main]
+    paths: [".github/workflows/*.md", ".github/workflows/*.lock.yml"]
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gh-aw
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # the latest stable release (`gh release view` without a tag skips pre-releases)
+          TAG=$(gh release view --repo github/gh-aw --json tagName --jq .tagName)
+          echo "Installing gh-aw $TAG"
+          mkdir -p "$RUNNER_TEMP/gh-aw/bin"
+          curl -fsSL --retry 3 --retry-delay 5 "https://github.com/github/gh-aw/releases/download/${TAG}/linux-amd64" -o "$RUNNER_TEMP/gh-aw/linux-amd64"
+          curl -fsSL --retry 3 --retry-delay 5 "https://github.com/github/gh-aw/releases/download/${TAG}/checksums.txt" -o "$RUNNER_TEMP/gh-aw/checksums.txt"
+          (cd "$RUNNER_TEMP/gh-aw" && grep ' linux-amd64$' checksums.txt | sha256sum --check --status)
+          mv "$RUNNER_TEMP/gh-aw/linux-amd64" "$RUNNER_TEMP/gh-aw/bin/gh-aw"
+          chmod +x "$RUNNER_TEMP/gh-aw/bin/gh-aw"
+          echo "$RUNNER_TEMP/gh-aw/bin" >> "$GITHUB_PATH"
+      - name: Recompile and compare
+        run: |
+          gh-aw compile
+          if [ -n "$(git status --porcelain -- '.github/workflows/*.lock.yml')" ]; then
+            echo "::error::Lock files are out of date. Run 'gh aw compile' and commit the result."
+            git --no-pager diff --stat -- '.github/workflows/*.lock.yml'
+            exit 1
+          fi

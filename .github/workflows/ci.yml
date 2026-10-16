@@ -25,7 +25,11 @@ jobs:
       - name: Lint the Firefox build
         run: npx --yes web-ext@8 lint --source-dir dist/firefox --warnings-as-errors=false
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test
+      - run: npm run build:chrome
+      - name: End-to-end tests
+        run: npx playwright test --project=e2e
+      - name: Accessibility tests (WCAG 2.2 AA contrast, every button, touch targets)
+        run: npx playwright test --project=a11y
       - uses: actions/upload-artifact@v4
         with:
           name: extension-zips

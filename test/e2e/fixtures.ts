@@ -28,18 +28,35 @@ export interface FakeRepo {
     pulls?: { [number: number]: FakePull };
 }
 
-export const test = base.extend<{ context: BrowserContext; extensionId: string }>({
+type Launch = (options?: Parameters<typeof chromium.launchPersistentContext>[1]) => Promise<BrowserContext>;
+
+// A Chromium with the unpacked extension loaded; contexts are closed (and their profile directories removed) after the test.
+export const test = base.extend<{ context: BrowserContext; extensionId: string; launch: Launch; mobileContext: BrowserContext }>({
     // eslint-disable-next-line no-empty-pattern
-    context: async ({}, use) => {
-        const dir = await mkdtemp(path.join(os.tmpdir(), "ghp-e2e-"));
-        const context = await chromium.launchPersistentContext(dir, {
-            channel: "chromium",
-            headless: true,
-            args: [`--disable-extensions-except=${DIST}`, `--load-extension=${DIST}`]
+    launch: async ({}, use) => {
+        const dirs: string[] = [];
+        const contexts: BrowserContext[] = [];
+        await use(async options => {
+            const dir = await mkdtemp(path.join(os.tmpdir(), "ghp-e2e-"));
+            dirs.push(dir);
+            const context = await chromium.launchPersistentContext(dir, {
+                channel: "chromium",
+                headless: true,
+                ...options,
+                args: [`--disable-extensions-except=${DIST}`, `--load-extension=${DIST}`, ...(options?.args ?? [])]
+            });
+            contexts.push(context);
+            return context;
         });
-        await use(context);
-        await context.close();
-        await rm(dir, { recursive: true, force: true });
+        for (const context of contexts) await context.close();
+        for (const dir of dirs) await rm(dir, { recursive: true, force: true });
+    },
+    context: async ({ launch }, use) => {
+        await use(await launch());
+    },
+    // a phone-sized viewport with touch input: coarse pointer, no hover
+    mobileContext: async ({ launch }, use) => {
+        await use(await launch({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }));
     },
     extensionId: async ({ context }, use) => {
         let [worker] = context.serviceWorkers();
@@ -47,6 +64,12 @@ export const test = base.extend<{ context: BrowserContext; extensionId: string }
         await use(new URL(worker.url()).host);
     }
 });
+
+export const extensionIdOf = async (context: BrowserContext): Promise<string> => {
+    let [worker] = context.serviceWorkers();
+    if (!worker) worker = await context.waitForEvent("serviceworker");
+    return new URL(worker.url()).host;
+}
 
 const NEW_LAYOUT_PR = (owner: string, repo: string, files: string[], diffs?: { before: string; after: string }) => `<!doctype html><html data-color-mode="light"><body>
 ${diffs ? `<script>fetch("/${owner}/${repo}/diffs/${diffs.before}..${diffs.after}?base_sha=${diffs.before}&whitespace_ignored=false", { method: "POST" });</script>
