@@ -59,19 +59,22 @@ English
 | Store Icon [REQUIRED] | 128×128 PNG (96px art + 16px transparent padding) | ✅ Ready | `static/icons/128.png` (inside the ZIP) |
 | Screenshot 1 [REQUIRED] | 1280×800 | ✅ Ready | `store/generated/screenshot-1-inline-diff.png` |
 | Screenshot 2 [RECOMMENDED] | 1280×800 | ✅ Ready | `store/generated/screenshot-2-side-by-side.png` |
-| Screenshot 3 [RECOMMENDED] | 1280×800 | ✅ Ready | `store/generated/screenshot-3-file-preview.png` |
-| Screenshot 4 | 1280×800 | ✅ Ready | `store/generated/screenshot-4-options.png` |
-| Screenshot 5 | 1280×800 | ⬜ Not created | |
+| Screenshot 3 [RECOMMENDED] | 1280×800 | ✅ Ready | `store/generated/screenshot-3-preview-button.png` |
+| Screenshot 4 | 1280×800 | ✅ Ready | `store/generated/screenshot-4-run-scripts.png` |
+| Screenshot 5 | 1280×800 | ✅ Ready | `store/generated/screenshot-5-report-and-options.png` |
 | Small Promo Tile [REQUIRED by the store] | 440×280 | ✅ Ready | `store/generated/promo-small.png` |
 | Marquee Promo Tile | 1400×560 | ⬜ Not created | |
 
-Regenerate with `npm run build && npm run store-assets` (renders the real UI against a fake GitHub; the page shown is a made-up "Acme Cloud" page, not third-party content).
+Regenerate with `npm run build && npm run store-assets` (renders the real UI against a fake GitHub; the page shown is a made-up "Acme Cloud" page, not third-party content). The store allows five screenshots, so the surfaces a user meets are packed into them. Screenshot 3 uses a crop of this project's own public GitHub file page (`store/assets/github-file-header.png`, recaptured with `LIVE_GITHUB=1`), cut below GitHub's top bar so no GitHub logo appears.
 
 ### Screenshot Notes
 1. Inline diff: green additions, amber change, red removal bubble opened.
 2. Side by side: removed on the left in red, added on the right in green.
-3. A single file previewed, with stylesheet and images applied.
-4. Options page with the access test.
+3. The Preview button the extension adds next to Raw on a GitHub file page, and the page rendered after one click (single-file preview with its toolbar: Run scripts, Report a problem).
+4. "Run this page's scripts?" confirmation: lists the repository scripts that would run, the inline-script count and blocked remote scripts; Cancel, Run this time, Always allow this repository.
+5. "Report a problem" dialog (what went wrong, editable address and technical details, opt-in HTML, Open prefilled issue) beside the options page (access test, repositories allowed to run scripts with Remove / Remove all).
+
+Surfaces not shown because a screenshot cannot capture them: the right-click "Preview HTML file" menu entry, the Alt+Shift+P shortcut, and the in-page diff panel's Full screen and Close buttons (all described in the listing text).
 
 ## Permissions Justification
 
