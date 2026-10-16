@@ -1,6 +1,6 @@
 # Privacy policy
 
-*Rendered HTML Diff for GitHub* ("the extension") runs entirely in your browser. There is no server operated by the extension's author.
+*GitHub HTML Diff Preview* ("the extension") runs entirely in your browser. There is no server operated by the extension's author.
 
 ## What the extension does with data
 
@@ -22,6 +22,6 @@ Previews render untrusted repository HTML in a sandboxed frame with scripts disa
 
 ## Contact
 
-Questions or concerns: open an issue at https://github.com/kaovilai/github-html-preview/issues.
+Questions or concerns: open an issue at https://github.com/kaovilai/github-html-diff-preview/issues.
 
 *Last updated: 2026-10-16.*

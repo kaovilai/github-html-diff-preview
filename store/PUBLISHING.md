@@ -22,7 +22,7 @@ Console: https://chrome.google.com/webstore/devconsole
 | Contact email | Must be verified from the Account page. |
 | Trader status | EU consumer-law declaration. A free, open-source extension from an individual is normally declared **non-trader**; the other listings found during research did the same. |
 | New-publisher limit | New publishers can have at most two published extensions until they request an increase. |
-| Upload | `dist/github-html-preview-chrome-<version>.zip` (Add new item, Choose file). |
+| Upload | `dist/github-html-diff-preview-chrome-<version>.zip` (Add new item, Choose file). |
 | Listing / Privacy | Paste from `store/LISTING.md`; upload `store/generated/*.png` (screenshots 1280x800, small promo 440x280). |
 | Review time | Usually a few days, up to a few weeks; new developers, new extensions and host permissions get a closer look. After approval you have 30 days to publish if you choose deferred publishing. |
 | Cost | Registration fee only. |
@@ -46,9 +46,9 @@ Console: Partner Center, https://partner.microsoft.com/dashboard/microsoftedge/o
 Console: https://addons.mozilla.org/developers/
 
 - Free Mozilla account; no fee. Choose "On this site" for a listed add-on (or "On your own" for a signed self-hosted `.xpi`).
-- Upload `dist/github-html-preview-firefox-<version>.zip`.
+- Upload `dist/github-html-diff-preview-firefox-<version>.zip`.
 - **Source code upload is required** because the extension is bundled with esbuild: attach `npm run source-zip` output and these build instructions: *Node.js 22+, `npm ci`, `npm run build:firefox`; the output is `dist/firefox`.*
-- The Firefox manifest already carries an add-on ID (`github-html-preview@kaovilai.github.io`) and the required data-collection declaration (`none`); `web-ext lint` reports zero warnings.
+- The Firefox manifest already carries an add-on ID (`github-html-diff-preview@kaovilai.github.io`) and the required data-collection declaration (`none`); `web-ext lint` reports zero warnings.
 - Not yet covered by automated browser tests; do a manual pass (`about:debugging`, Load Temporary Add-on) on a public file and a public PR before submitting. The scripts toggle is absent in Firefox by design.
 - Review is partly automated and usually quick for listed add-ons, but can take longer when manual review is triggered.
 

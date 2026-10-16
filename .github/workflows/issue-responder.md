@@ -59,7 +59,7 @@ concurrency:
   job-discriminator: ${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
 ---
 
-# Issue helper for github-html-preview
+# Issue helper for github-html-diff-preview
 
 You help the people who use this browser extension (it previews HTML files and shows rendered HTML diffs on GitHub, entirely locally). The repository is a public project and its reporters are strangers, so you act as a careful, friendly first responder.
 

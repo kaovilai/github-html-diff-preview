@@ -4,9 +4,11 @@ Everything below is ready to paste. Nothing here has been submitted anywhere.
 
 ## Name
 
-**Rendered HTML Diff for GitHub**  (store display name; repository: `github-html-preview`)
+**GitHub HTML Diff Preview**  (store display name; repository: `github-html-diff-preview`)
 
-Why this name: three Chrome Web Store listings already use "GitHub HTML Preview"-style names (dohyeon5626's "Github Html Preview", bauerautomate's "GitHub HTML Preview", thejjw's "GitHub Local HTML Preview"). This name leads with what is unique here, the rendered diff, and "for GitHub" is a descriptive reference (nominative use), not a claim of affiliation. The listing says so explicitly (see disclaimer below). Alternative if the store objects to "GitHub" in the title: **Rendered HTML Diff & Preview** (mention GitHub only in the summary and description).
+Things to weigh before submitting:
+- Three Chrome Web Store listings already use "GitHub HTML Preview"-style names (dohyeon5626's "Github Html Preview", bauerautomate's "GitHub HTML Preview", thejjw's "GitHub Local HTML Preview"). "Diff" is the distinguishing word, so the listing and screenshots should lead with the rendered diff, and the icon and branding are unrelated to those listings.
+- The name begins with "GitHub". The listing carries a non-affiliation disclaimer (see Description). GitHub's brand guidelines and the Chrome Web Store's impersonation policy both discourage product names that imply an official GitHub product; if a reviewer objects, use **HTML Diff Preview for GitHub** (nominative "for GitHub") or **Rendered HTML Diff & Preview**.
 
 ## Summary (max 132 characters)
 
@@ -20,7 +22,7 @@ Developer Tools. Language: English.
 
 ## Description
 
-> Rendered HTML Diff for GitHub shows you what an HTML file actually looks like, right from GitHub, and what a pull request changed in the rendered page, not just in the source.
+> GitHub HTML Diff Preview shows you what an HTML file actually looks like, right from GitHub, and what a pull request changed in the rendered page, not just in the source.
 >
 > **Preview any HTML file**
 > • A Preview button next to "Raw" on .html and .htm files, plus a right-click menu entry and a keyboard shortcut (Alt+Shift+P).
@@ -37,7 +39,7 @@ Developer Tools. Language: English.
 > • Private repositories work through the GitHub login already in your browser; nothing needs to be stored. An optional fine-grained token, kept only on your device, is a fallback if GitHub's page ever stops exposing what the diff needs.
 > • Previewed pages are untrusted, so they render in a sandboxed frame with scripts off. An explicit "Run scripts (untrusted)" switch for single files is available if you want it.
 >
-> Open source (MIT): https://github.com/kaovilai/github-html-preview
+> Open source (MIT): https://github.com/kaovilai/github-html-diff-preview
 >
 > Not affiliated with, endorsed by, or sponsored by GitHub, Inc. "GitHub" is a trademark of GitHub, Inc., used here only to describe what the extension works with.
 
@@ -63,7 +65,7 @@ Developer Tools. Language: English.
 Check only: **Authentication information** (the optional personal access token the user enters; stored locally, sent only to api.github.com). Everything else unchecked. (The page-derived commit hashes, repository names and file paths are processed locally and sent only to GitHub as part of the requests for the files the user asked to preview.)
 Certify: not sold or transferred to third parties; not used for purposes unrelated to the single purpose; not used for creditworthiness/lending.
 
-Privacy policy URL: `https://github.com/kaovilai/github-html-preview/blob/main/PRIVACY.md`
+Privacy policy URL: `https://github.com/kaovilai/github-html-diff-preview/blob/main/PRIVACY.md`
 
 ## Notes for reviewers / test instructions
 
@@ -90,4 +92,4 @@ The screenshots show a made-up "Acme Cloud" page, not third-party content, rende
 
 ## Packages
 
-`npm run zip` writes reproducible `dist/github-html-preview-chrome-<version>.zip` and `dist/github-html-preview-firefox-<version>.zip`. `npm run source-zip` writes the source archive that AMO asks for.
+`npm run zip` writes reproducible `dist/github-html-diff-preview-chrome-<version>.zip` and `dist/github-html-diff-preview-firefox-<version>.zip`. `npm run source-zip` writes the source archive that AMO asks for.

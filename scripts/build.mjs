@@ -27,7 +27,7 @@ const manifestFor = async (target) => {
         delete manifest.content_security_policy;
         delete manifest.minimum_chrome_version;
         manifest.background = { scripts: ["background.js"] };
-        manifest.browser_specific_settings = { gecko: { id: "github-html-preview@kaovilai.github.io", strict_min_version: "128.0", data_collection_permissions: { required: ["none"] } } };
+        manifest.browser_specific_settings = { gecko: { id: "github-html-diff-preview@kaovilai.github.io", strict_min_version: "128.0", data_collection_permissions: { required: ["none"] } } };
     }
     return manifest;
 }

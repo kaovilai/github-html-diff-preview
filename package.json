@@ -1,5 +1,5 @@
 {
-  "name": "github-html-preview",
+  "name": "github-html-diff-preview",
   "version": "0.1.0",
   "private": true,
   "description": "Browser extension that previews HTML files and rendered HTML diffs on GitHub, entirely locally.",
@@ -7,7 +7,7 @@
   "author": "kaovilai",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaovilai/github-html-preview.git"
+    "url": "git+https://github.com/kaovilai/github-html-diff-preview.git"
   },
   "type": "module",
   "engines": {
@@ -27,7 +27,7 @@
     "repro": "node scripts/repro.mjs",
     "icons": "node scripts/make-icons.mjs",
     "store-assets": "node scripts/store-assets.ts",
-    "source-zip": "mkdir -p dist && git archive --format=zip --output dist/github-html-preview-source.zip HEAD"
+    "source-zip": "mkdir -p dist && git archive --format=zip --output dist/github-html-diff-preview-source.zip HEAD"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

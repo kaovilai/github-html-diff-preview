@@ -52,5 +52,5 @@ body:
       options:
         - label: I did not paste a personal access token, cookie or any other secret
           required: true
-        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-preview/blob/main/docs/TROUBLESHOOTING.md)
+        - label: I checked the [troubleshooting guide](https://github.com/kaovilai/github-html-diff-preview/blob/main/docs/TROUBLESHOOTING.md)
           required: true

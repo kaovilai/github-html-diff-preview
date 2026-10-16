@@ -1,4 +1,4 @@
-# Rendered HTML Diff for GitHub
+# GitHub HTML Diff Preview
 
 A browser extension that previews HTML files on GitHub and shows **rendered before/after diffs of HTML files in pull requests**, entirely locally.
 
@@ -32,8 +32,8 @@ A browser extension that previews HTML files on GitHub and shows **rendered befo
 Not yet published to any store. To try it:
 
 ```sh
-git clone https://github.com/kaovilai/github-html-preview.git
-cd github-html-preview
+git clone https://github.com/kaovilai/github-html-diff-preview.git
+cd github-html-diff-preview
 npm ci
 npm run build
 ```

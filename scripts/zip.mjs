@@ -23,7 +23,7 @@ for (const target of ["chrome", "firefox"]) {
     for (const file of await walk(dir)) {
         entries[file] = [new Uint8Array(await readFile(path.join(dir, file))), { mtime: new Date("2026-01-01T00:00:00Z"), level: 9 }];
     }
-    const out = path.join(root, "dist", `github-html-preview-${target}-${pkg.version}.zip`);
+    const out = path.join(root, "dist", `github-html-diff-preview-${target}-${pkg.version}.zip`);
     await writeFile(out, zipSync(entries));
     console.log(`wrote ${path.relative(root, out)}`);
 }

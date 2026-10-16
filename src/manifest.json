@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Rendered HTML Diff for GitHub",
-    "short_name": "HTML Diff for GitHub",
+    "name": "GitHub HTML Diff Preview",
+    "short_name": "HTML Diff Preview",
     "version": "0.0.0",
     "description": "Preview HTML files on GitHub and see rendered before/after diffs in pull requests. Runs entirely in your browser.",
     "minimum_chrome_version": "112",
@@ -39,7 +39,7 @@
         "open_in_tab": true
     },
     "action": {
-        "default_title": "Rendered HTML Diff for GitHub"
+        "default_title": "GitHub HTML Diff Preview"
     },
     "web_accessible_resources": [
         {
