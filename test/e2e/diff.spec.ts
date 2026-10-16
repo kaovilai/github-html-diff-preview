@@ -143,6 +143,68 @@ test.describe("reporting a problem", () => {
         expect(url.search).not.toMatch(/token|secret|authorization/i);
     });
 
+    test("\"Include the page's HTML\" is off by default and adds the file's HTML to the form only when ticked", async ({ context }) => {
+        await fakeGithub(context, { files: { "main/a.html": "<body><p>secret-ish & <b>ok</b></p></body>", "main/big.html": `<body>${"<p>line</p>\n".repeat(2000)}</body>` } });
+        const open = async (name: string) => {
+            const page = await context.newPage();
+            await page.goto(`https://github.com/o/r/blob/main/${name}`);
+            const [viewer] = await Promise.all([context.waitForEvent("page"), page.locator("[data-hp-blob-button]").click()]);
+            await expect(viewer.locator("#stage > iframe")).toBeVisible();
+            await viewer.evaluate(() => {
+                const w = window as unknown as { __opened: string[]; __clip: string[] };
+                w.__opened = []; w.__clip = [];
+                chrome.tabs.create = (async (options: chrome.tabs.CreateProperties) => { w.__opened.push(String(options.url)); return {} as chrome.tabs.Tab; }) as typeof chrome.tabs.create;
+                // the clipboard needs a focused, visible page; record what would be copied instead
+                Object.defineProperty(navigator, "clipboard", { value: { writeText: async (text: string) => { w.__clip.push(text); } }, configurable: true });
+            });
+            return viewer;
+        };
+        const opened = (viewer: Awaited<ReturnType<typeof open>>) => viewer.evaluate(() => (window as unknown as { __opened: string[] }).__opened);
+        const copied = (viewer: Awaited<ReturnType<typeof open>>) => viewer.evaluate(() => (window as unknown as { __clip: string[] }).__clip);
+
+        const small = await open("a.html");
+        await small.locator("#report").click();
+        const include = small.locator("#report-include-html");
+        await expect(include).toBeEnabled();
+        await expect(include).not.toBeChecked();
+        await small.locator("#report-open").click();
+        await expect.poll(async () => (await opened(small)).length).toBe(1);
+        expect(new URL((await opened(small))[0]).searchParams.has("after_html")).toBe(false);
+
+        // ticked: the file travels in the address, nothing needs the clipboard
+        await small.locator("#report").click();
+        await include.check();
+        await small.locator("#report-open").click();
+        await expect.poll(async () => (await opened(small)).length).toBe(2);
+        expect(new URL((await opened(small))[1]).searchParams.get("after_html")).toBe("<body><p>secret-ish & <b>ok</b></p></body>");
+        expect(await copied(small)).toEqual([]);
+
+        // the choice does not carry over to the next time the dialog opens
+        await small.locator("#report").click();
+        await expect(include).not.toBeChecked();
+        await small.locator("#report-cancel").click();
+
+        // too long for the address: the start goes into the form (marked as clipped), all of it onto the clipboard
+        const big = await open("big.html");
+        await big.locator("#report").click();
+        await big.locator("#report-include-html").check();
+        await big.locator("#report-open").click();
+        await expect.poll(async () => (await opened(big)).length).toBe(1);
+        const url = new URL((await opened(big))[0]);
+        expect(url.href.length).toBeLessThan(8000);
+        expect(url.searchParams.get("after_html")).toContain("clipped: the full HTML is on your clipboard");
+        expect((await copied(big))[0]).toContain("<p>line</p>\n".repeat(2000));
+    });
+
+    test("there is nothing to include before any HTML has loaded", async ({ context, extensionId }) => {
+        await fakeGithub(context, { files: {} });
+        const viewer = await context.newPage();
+        await viewer.goto(`chrome-extension://${extensionId}/viewer/viewer.html#kind=blob&owner=o&repo=r&rest=main%2Fnope.html`);
+        await expect(viewer.locator("#status.error")).toContainText("File not found");
+        await viewer.locator("#report-from-error").click();
+        await expect(viewer.locator("#report-include-html")).toBeDisabled();
+    });
+
     test("cancel sends nothing, and the always-visible button works without an error", async ({ context }) => {
         const gh = await fakeGithub(context, { files: { "main/a.html": "<body><p>ok</p></body>" } });
         const page = await context.newPage();

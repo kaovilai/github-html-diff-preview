@@ -2,6 +2,7 @@
 
 ## 0.2.1
 
+- **Report a problem** can include the page's HTML (off by default each time) for private repositories where a link would not help. Long HTML is clipped in the form and copied in full to the clipboard.
 - Fixed the single-file preview showing the page in a narrow box (about a quarter of the window) instead of filling it. A test now checks the frame fills the window, with and without scripts.
 
 ## 0.2.0

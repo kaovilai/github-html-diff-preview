@@ -15,6 +15,8 @@ Pick the issue form that matches. Each one asks for the same three things so a r
 
 The quickest way is **Report a problem** inside the preview: it opens one of these forms prefilled (the GitHub page address you confirm, the error shown, your browser and extension version) and you press Submit yourself. Never paste a token, cookie or other secret. Private repository contents cannot be examined by the automation; the minimal HTML fields exist so you can share only what is needed.
 
+For a **private repository**, where a link would not help, tick **Include the page's HTML in the report** in the dialog (off by default each time). The file's HTML (both sides of a diff) is put into the form's HTML fields so the helper can reproduce the problem from it. Issues are public: tick it only if the HTML holds nothing sensitive, and review the field before you submit. If the HTML is too long for the address, the start is prefilled and marked as clipped, and the full text is copied to your clipboard to paste over it.
+
 ## Good acceptance criteria
 
 Short, concrete and observable. Each line becomes one test.

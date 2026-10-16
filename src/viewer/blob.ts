@@ -1,7 +1,7 @@
 import { send, type ResolvedBlob } from "../shared/messages";
 import { getScriptPaths, loadScripts, rewriteUrls, serializeDocument } from "../core/html-prepare";
 import { byId, fetchText, prepareSide, STATIC_SANDBOX } from "./common";
-import { showError } from "./report";
+import { setReportState, showError } from "./report";
 
 const SCRIPT_SANDBOX = "allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms allow-modals";
 
@@ -35,6 +35,7 @@ export const runBlob = async ({ owner, repo, rest, ref: hint }: BlobParams) => {
     byId("blob-controls").hidden = false;
     const blob = await send<ResolvedBlob>({ type: "resolve-blob", owner, repo, rest, ref: hint });
     const { ref, path, text } = blob;
+    setReportState({ html: { after: text } });
 
     document.title = `${path.split("/").pop()} · HTML preview`;
     byId("title").textContent = `${owner}/${repo}@${ref} · ${path}`;

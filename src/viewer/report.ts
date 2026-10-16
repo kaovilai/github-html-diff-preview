@@ -1,5 +1,5 @@
 import { send, type ProbeOutcome } from "../shared/messages";
-import { defaultKind, describeBrowser, issueUrl, type ReportKind } from "../shared/report";
+import { clipboardHtml, defaultKind, describeBrowser, htmlFitsInAddress, issueUrl, type ReportKind, type SharedHtml } from "../shared/report";
 import { byId } from "./common";
 
 export interface ReportState {
@@ -9,6 +9,8 @@ export interface ReportState {
     probeUrl?: string;
     error?: string;
     status?: number;
+    // the HTML of the file(s) being viewed, offered in the dialog; absent until it has loaded
+    html?: SharedHtml;
 }
 
 let state: ReportState | undefined;
@@ -52,6 +54,14 @@ export const openReportDialog = () => {
     const current = state ?? { pageUrl: "" };
     byId<HTMLSelectElement>("report-kind").value = defaultKind(current.status, !!current.error);
     byId<HTMLTextAreaElement>("report-urls").value = current.pageUrl;
+    const include = byId<HTMLInputElement>("report-include-html");
+    const has = !!(current.html?.before || current.html?.after);
+    // always starts unticked: the HTML goes into a public issue, so sharing it is a fresh choice each time
+    include.checked = false;
+    include.disabled = !has;
+    byId("report-html-hint").textContent = has
+        ? "Publishes the file's HTML in the issue. Tick it when the repository is private and a link would not help, and only if the HTML holds nothing sensitive."
+        : "No HTML has been loaded, so there is nothing to include.";
     byId("report-error").textContent = current.error ? `Error shown: ${current.error}` : "No error was shown; describe the problem on the GitHub form.";
     byId<HTMLDialogElement>("report-dialog").showModal();
 }
@@ -73,11 +83,17 @@ export const initReport = (initial: ReportState) => {
             const kind = byId<HTMLSelectElement>("report-kind").value as ReportKind;
             // the address the user confirmed in the dialog, not the one the extension started with
             const urls = byId<HTMLTextAreaElement>("report-urls").value;
+            const html = byId<HTMLInputElement>("report-include-html").checked ? state?.html : undefined;
+            if (html && !htmlFitsInAddress(html)) {
+                // too long for the address: the form gets the start, the clipboard gets all of it
+                await navigator.clipboard.writeText(clipboardHtml(html));
+            }
             const url = issueUrl({
                 kind,
                 urls,
                 error: state?.error,
                 probe: kind === "access" ? await probeText() : undefined,
+                html,
                 browser: describeBrowser(navigator.userAgent),
                 version: chrome.runtime.getManifest().version
             });

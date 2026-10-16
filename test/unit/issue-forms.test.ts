@@ -58,6 +58,16 @@ describe("issue forms", () => {
         }
     });
 
+    it("every form the report button can open accepts the shared HTML as optional fields", () => {
+        for (const name of ["access_problem.yml", "bug_report.yml", "rendering_bug.yml"]) {
+            for (const id of ["before_html", "after_html"]) {
+                const field = load(name).body.find(f => f.id === id);
+                expect(field, `${name} ${id}`).toBeTruthy();
+                expect(field?.validations?.required, `${name} ${id}`).not.toBe(true);
+            }
+        }
+    });
+
     it("rendering and button forms collect what the helper needs to reproduce offline", () => {
         const ids = (name: string) => load(name).body.map(field => field.id);
         expect(ids("rendering_bug.yml")).toEqual(expect.arrayContaining(["urls", "kind", "before_html", "after_html", "actual", "criteria"]));

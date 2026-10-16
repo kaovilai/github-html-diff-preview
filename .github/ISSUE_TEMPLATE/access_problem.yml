@@ -36,6 +36,18 @@ body:
     validations:
       required: true
   - type: textarea
+    id: before_html
+    attributes:
+      label: HTML, before (optional)
+      description: "Filled in by the extension's \"Include the page's HTML\" option, for private repositories. This issue is public, so check that it holds nothing sensitive."
+      render: html
+  - type: textarea
+    id: after_html
+    attributes:
+      label: HTML, after, or the file itself (optional)
+      description: "Filled in by the extension's \"Include the page's HTML\" option, for private repositories. This issue is public, so check that it holds nothing sensitive."
+      render: html
+  - type: textarea
     id: actual
     attributes:
       label: The exact message you see

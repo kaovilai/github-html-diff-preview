@@ -3,6 +3,7 @@ import { isSha } from "../core/github-urls";
 import { loadViewMode, saveViewMode, type ViewMode } from "./view-mode";
 import { buildViews, type Side as SideName, type Views } from "../core/html-diff";
 import { rewriteUrls } from "../core/html-prepare";
+import { setReportState } from "./report";
 import { byId, fetchText, prepareSide, showNotice, STATIC_SANDBOX, type PreparedSide } from "./common";
 
 const CHANGE_SELECTOR = "[data-hp-added], [data-hp-removed], [data-hp-modified], hp-del";
@@ -101,6 +102,7 @@ export const runDiff = async (params: DiffParams) => {
     const status = info.change?.status ?? (!hasBefore ? "added" : !hasAfter ? "removed" : "modified");
     const change = info.change ?? { status };
     const [beforeHtml, afterHtml] = [beforeResult.html, afterResult.html];
+    setReportState({ html: { before: hasBefore ? beforeHtml : undefined, after: hasAfter ? afterHtml : undefined } });
     const [before, after] = await Promise.all([
         prepareSide({ owner, repo, ref: info.before || "", path: beforePath, html: beforeHtml }),
         prepareSide({ owner, repo, ref: info.after, path, html: afterHtml })

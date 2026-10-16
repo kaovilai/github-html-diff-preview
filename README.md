@@ -60,7 +60,7 @@ No data leaves your browser except read-only requests to GitHub (`github.com`, a
 
 ## Report a problem
 
-When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, and the error shown. **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Store updates take days to review, so until the fixed version reaches the store it explains how to [use the fix from source](#workaround-use-a-fix-from-source) as a temporary workaround.
+When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, and the error shown. **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. For a private repository you can also tick **Include the page's HTML in the report** (off by default) when the file holds nothing sensitive; long HTML is copied to your clipboard to paste into the form. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Store updates take days to review, so until the fixed version reaches the store it explains how to [use the fix from source](#workaround-use-a-fix-from-source) as a temporary workaround.
 
 ## Workaround: use a fix from source
 
