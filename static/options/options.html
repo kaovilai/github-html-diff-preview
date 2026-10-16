@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rendered HTML Diff for GitHub - Options</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+<body>
+    <main>
+        <h1>Rendered HTML Diff for GitHub</h1>
+        <p class="lead">Everything runs in your browser. Files are fetched directly from GitHub; nothing is sent anywhere else.</p>
+
+        <section>
+            <h2>How files are fetched</h2>
+            <label for="authMode">Access mode</label>
+            <select id="authMode">
+                <option value="auto">Automatic (browser login, then token, then anonymous)</option>
+                <option value="session">Browser login to github.com only</option>
+                <option value="token">Personal access token only</option>
+                <option value="anonymous">Anonymous (public repositories only)</option>
+            </select>
+            <p class="hint">
+                <strong>Browser login</strong> reuses the GitHub session already in this browser, so private repositories
+                work without storing anything. File content and images/fonts/CSS use this.
+                <strong>Pull request diffs</strong> need GitHub's API, which a browser login cannot access, so private-repository
+                diffs need a token below.
+            </p>
+        </section>
+
+        <section>
+            <h2>Personal access token (optional)</h2>
+            <label for="token">Token</label>
+            <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+            <p class="hint">
+                Stored only in this browser (<code>chrome.storage.local</code>) and sent only to <code>api.github.com</code>.
+                Use a
+                <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">fine-grained token</a>
+                limited to the repositories you need, with read-only <em>Contents</em> and <em>Pull requests</em> permissions.
+            </p>
+            <div class="row">
+                <button id="save" type="button">Save</button>
+                <button id="clear" type="button">Remove token</button>
+                <span id="saved" role="status"></span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Test access to a file</h2>
+            <label for="probe-url">GitHub file URL</label>
+            <input id="probe-url" type="url" placeholder="https://github.com/owner/repo/blob/main/index.html">
+            <div class="row"><button id="probe" type="button">Test</button></div>
+            <pre id="probe-result" hidden></pre>
+            <p class="hint">Tries each method separately so you can see which ones work for that file.</p>
+        </section>
+    </main>
+    <script src="../options.js"></script>
+</body>
+</html>
