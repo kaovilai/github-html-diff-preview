@@ -60,3 +60,46 @@ test("the diff is rendered with scripts disabled", async ({ context }) => {
     await expect(inline.locator("script")).toHaveCount(0);
     await expect(inline.locator("#p")).not.toHaveAttribute("onclick", /.*/);
 });
+
+test.describe("commits taken from GitHub's own page", () => {
+    const pull = (extra: object = {}) => ({
+        base: BASE, head: HEAD, mergeBase: MERGE_BASE,
+        files: [{ filename: "docs/new.html", status: "renamed", previous_filename: "docs/old.html" }],
+        pageDiffs: { before: MERGE_BASE, after: HEAD },
+        ...extra
+    });
+    const files = { [`${MERGE_BASE}/docs/old.html`]: BEFORE, [`${HEAD}/docs/new.html`]: AFTER };
+
+    test("needs no REST API call: commits come from the page, file status from the session diff", async ({ context }) => {
+        const gh = await fakeGithub(context, { files, pulls: { 5: pull() } });
+        const page = await context.newPage();
+        await page.goto("https://github.com/o/r/pull/5/files");
+        await page.getByRole("button", { name: "Preview" }).click();
+        const panel = page.frameLocator('iframe[title^="HTML diff preview"]');
+
+        await expect(panel.locator("#stats")).toContainText("added");
+        // the rename was found in the .diff, so the old path was used for the "before" side
+        await expect(panel.locator("#notice")).toContainText("Renamed from docs/old.html");
+        expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
+        expect(gh.requests).toContain(`/o/r/raw/${MERGE_BASE}/docs/old.html`);
+    });
+
+    test("a deleted file is recognised from the diff", async ({ context }) => {
+        const gh = await fakeGithub(context, { files: { [`${MERGE_BASE}/docs/gone.html`]: BEFORE }, pulls: { 5: pull({ files: [{ filename: "docs/gone.html", status: "removed" }] }) } });
+        const page = await context.newPage();
+        await page.goto("https://github.com/o/r/pull/5/files");
+        await page.getByRole("button", { name: "Preview" }).click();
+        await expect(page.frameLocator('iframe[title^="HTML diff preview"]').locator("#notice")).toContainText("File deleted");
+        expect(gh.requests.filter(request => request.startsWith("api:"))).toEqual([]);
+    });
+
+    test("an explicit commit range in the address must agree with the page, otherwise the API is used", async ({ context }) => {
+        const gh = await fakeGithub(context, { files: { [`${MERGE_BASE}/docs/a.html`]: BEFORE, [`${HEAD}/docs/a.html`]: AFTER }, pulls: { 5: { ...pull({ files: [{ filename: "docs/a.html", status: "modified" }] }), pageDiffs: { before: "1".repeat(40), after: "2".repeat(40) } } } });
+        const page = await context.newPage();
+        // the URL asks for a..b but the page reports unrelated commits: not trusted
+        await page.goto(`https://github.com/o/r/pull/5/changes/${MERGE_BASE}..${HEAD}`);
+        await page.getByRole("button", { name: "Preview" }).click();
+        await expect(page.frameLocator('iframe[title^="HTML diff preview"]').locator("#stats")).toContainText("added");
+        expect(gh.requests.some(request => request.startsWith("api:"))).toBe(true);
+    });
+});

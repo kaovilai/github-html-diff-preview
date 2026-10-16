@@ -14,7 +14,12 @@ test("live: Preview button on a public blob page", async ({ context }) => {
     await expect(viewer.locator("iframe")).toHaveCount(1, { timeout: 30_000 });
 });
 
-test("live: PR diff preview", async ({ context }) => {
+test("live: PR diff preview without the REST API (commits come from the page)", async ({ context }) => {
+    const apiRequests: string[] = [];
+    await context.route("https://api.github.com/**", route => {
+        apiRequests.push(new URL(route.request().url()).pathname);
+        return route.abort();
+    });
     const page = await context.newPage();
     await page.goto("https://github.com/redhat-et/pricetag-metering/pull/91/changes");
     const preview = page.getByRole("button", { name: "Preview" }).first();
@@ -22,4 +27,6 @@ test("live: PR diff preview", async ({ context }) => {
     await preview.click();
     const panel = page.frameLocator('iframe[title^="HTML diff preview"]').first();
     await expect(panel.locator("#stats")).toContainText(/added|removed|changed|No visible/, { timeout: 60_000 });
+    // github.com's own page beacons to api.github.com/_private; the extension must not touch the REST API
+    expect(apiRequests.filter(path => path.startsWith("/repos/"))).toEqual([]);
 });

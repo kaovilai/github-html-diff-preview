@@ -1,4 +1,5 @@
-import { send, type PrDiffInfo } from "../shared/messages";
+import { send, type FileChange, type PrDiffInfo } from "../shared/messages";
+import { isSha } from "../core/github-urls";
 import { loadSettings, saveSettings, type ViewMode } from "../core/settings";
 import { buildViews, type Side as SideName, type Views } from "../core/html-diff";
 import { rewriteUrls } from "../core/html-prepare";
@@ -12,6 +13,9 @@ interface DiffParams {
     pr: number;
     path: string;
     range?: string;
+    // the commits GitHub's own page is showing (read by the content script); without them the REST API is asked
+    before?: string;
+    after?: string;
 }
 
 const makeFrame = (html: string): HTMLIFrameElement => {
@@ -52,22 +56,54 @@ const scrollRatioSync = (from: HTMLIFrameElement, to: HTMLIFrameElement, ignoreU
     });
 }
 
-export const runDiff = async ({ owner, repo, pr, path, range }: DiffParams) => {
-    byId("diff-controls").hidden = false;
+interface Resolved {
+    before: string | null;
+    after: string;
+    // undefined when the diff could not say; the status is then inferred from which side has the file
+    change?: FileChange;
+}
 
+const resolve = async ({ owner, repo, pr, path, range, before, after }: DiffParams): Promise<Resolved> => {
+    if (before && after && isSha(before) && isSha(after)) {
+        const change = await send<FileChange | null>({ type: "pr-file-entry", owner, repo, before, after, path });
+        return { before, after, change: change ?? undefined };
+    }
     const info = await send<PrDiffInfo>({ type: "pr-info", owner, repo, pr, range });
     const change = info.files[path];
     if (!change) throw new Error(`${path} is not part of this diff.`);
+    return { before: info.before, after: info.after, change };
+}
 
-    const status = change.status;
-    const beforePath = change.previous || path;
-    const hasBefore = status !== "added" && !!info.before;
-    const hasAfter = status !== "removed";
+export const runDiff = async (params: DiffParams) => {
+    const { owner, repo, path } = params;
+    byId("diff-controls").hidden = false;
 
-    const [beforeHtml, afterHtml] = await Promise.all([
-        hasBefore ? fetchText({ owner, repo, ref: info.before!, path: beforePath }) : Promise.resolve(""),
-        hasAfter ? fetchText({ owner, repo, ref: info.after, path }) : Promise.resolve("")
-    ]);
+    const info = await resolve(params);
+    const beforePath = info.change?.previous || path;
+    const wanted = {
+        before: info.change?.status !== "added" && !!info.before,
+        after: info.change?.status !== "removed"
+    };
+
+    // when the status is unknown, a side that does not have the file tells us it was added or deleted
+    const settle = async (want: boolean, ref: string | null, filePath: string): Promise<{ html: string; error?: unknown }> => {
+        if (!want || !ref) return { html: "" };
+        try {
+            return { html: await fetchText({ owner, repo, ref, path: filePath }) };
+        } catch (error) {
+            // only a definite "not found" proves the side lacks the file; rate limits and network errors must surface
+            if (info.change || (error as { status?: number }).status !== 404) throw error;
+            return { html: "", error };
+        }
+    };
+    const [beforeResult, afterResult] = await Promise.all([settle(wanted.before, info.before, beforePath), settle(wanted.after, info.after, path)]);
+    if (beforeResult.error && afterResult.error) throw beforeResult.error;
+
+    const hasBefore = wanted.before && !beforeResult.error;
+    const hasAfter = wanted.after && !afterResult.error;
+    const status = info.change?.status ?? (!hasBefore ? "added" : !hasAfter ? "removed" : "modified");
+    const change = info.change ?? { status };
+    const [beforeHtml, afterHtml] = [beforeResult.html, afterResult.html];
     const [before, after] = await Promise.all([
         prepareSide({ owner, repo, ref: info.before || "", path: beforePath, html: beforeHtml }),
         prepareSide({ owner, repo, ref: info.after, path, html: afterHtml })

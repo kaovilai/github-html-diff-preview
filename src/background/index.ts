@@ -78,6 +78,8 @@ const handle = async (request: Request, sender: chrome.runtime.MessageSender): P
             return fetchAsset(request);
         case "pr-info":
             return prInfo.get(request);
+        case "pr-file-entry":
+            return fetcher.fetchDiffEntry(request.owner, request.repo, request.before, request.after, request.path);
         case "probe":
             return probe(request.url);
         default:
@@ -88,7 +90,7 @@ const handle = async (request: Request, sender: chrome.runtime.MessageSender): P
 chrome.runtime.onMessage.addListener((request: Request, sender, sendResponse: (response: Response<unknown>) => void) => {
     handle(request, sender).then(
         data => sendResponse({ ok: true, data }),
-        error => sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) })
+        error => sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error), status: error instanceof FetchError ? error.status : undefined })
     );
     return true;
 });

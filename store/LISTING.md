@@ -34,7 +34,7 @@ Developer Tools. Language: English.
 >
 > **Local and private by design**
 > • No hosted preview site, no proxy, no account, no analytics. Files go from GitHub straight to your browser and nowhere else.
-> • Private repositories work through the GitHub login already in your browser; nothing needs to be stored. Pull request diffs in private repositories need an optional fine-grained token, kept only on your device.
+> • Private repositories work through the GitHub login already in your browser; nothing needs to be stored. An optional fine-grained token, kept only on your device, is a fallback if GitHub's page ever stops exposing what the diff needs.
 > • Previewed pages are untrusted, so they render in a sandboxed frame with scripts off. An explicit "Run scripts (untrusted)" switch for single files is available if you want it.
 >
 > Open source (MIT): https://github.com/kaovilai/github-html-preview
@@ -52,7 +52,7 @@ Developer Tools. Language: English.
 | `storage` | Saves the user's preferences (inline vs side-by-side view, access mode) and an optional GitHub token the user chooses to enter. Stored locally with chrome.storage.local; never synced or transmitted except the token to api.github.com. |
 | `contextMenus` | Adds a "Preview HTML file" right-click entry on GitHub pages and links to .html files. |
 | Host `https://github.com/*` | Content script adds Preview buttons to GitHub file and pull request pages. The background worker fetches the file the user asked to preview from github.com/<owner>/<repo>/raw/..., using the user's existing GitHub session so private repositories they can access also work. |
-| Host `https://api.github.com/*` | Reads pull request metadata (changed files, merge base and head commit) needed to render a pull request diff, and file contents when a token is configured or the repository is public. |
+| Host `https://api.github.com/*` | Fallback only: reads pull request metadata (changed files, merge base and head commit) and file contents through the REST API when the GitHub page does not expose them, or when the user has configured a token. |
 | Host `https://raw.githubusercontent.com/*` | github.com raw-file requests redirect here (with a short-lived token for private repositories). Access is required for the redirected download to complete. |
 | Sandbox page + CSP (`sandbox` key) | Used only for the optional, off-by-default "Run scripts (untrusted)" mode of single-file previews. Repository scripts run in an opaque-origin sandbox page with no access to extension APIs, GitHub pages or cookies. The extension never loads or runs any code of its own from a remote location. |
 
@@ -60,7 +60,7 @@ Developer Tools. Language: English.
 
 ## Data usage disclosures (Privacy tab)
 
-Check only: **Authentication information** (the optional personal access token the user enters; stored locally, sent only to api.github.com). Everything else unchecked.
+Check only: **Authentication information** (the optional personal access token the user enters; stored locally, sent only to api.github.com). Everything else unchecked. (The page-derived commit hashes, repository names and file paths are processed locally and sent only to GitHub as part of the requests for the files the user asked to preview.)
 Certify: not sold or transferred to third parties; not used for purposes unrelated to the single purpose; not used for creditworthiness/lending.
 
 Privacy policy URL: `https://github.com/kaovilai/github-html-preview/blob/main/PRIVACY.md`

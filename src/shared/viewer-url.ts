@@ -1,6 +1,6 @@
 export type ViewerParams =
     | { kind: "blob"; owner: string; repo: string; rest: string; ref?: string; theme?: string }
-    | { kind: "pr"; owner: string; repo: string; pr: string; path: string; range?: string; theme?: string };
+    | { kind: "pr"; owner: string; repo: string; pr: string; path: string; range?: string; before?: string; after?: string; theme?: string };
 
 // Extension pages have no server routes, so the viewer takes its input from the URL hash.
 export const viewerHash = (params: ViewerParams): string => {

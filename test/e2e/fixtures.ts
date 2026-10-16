@@ -11,12 +11,21 @@ const DIST = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../d
 // 1x1 transparent PNG
 export const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
 
+export interface FakePull {
+    base: string;
+    head: string;
+    mergeBase: string;
+    files: { filename: string; status: string; previous_filename?: string }[];
+    // what GitHub's own diff view requests when the page loads (`/diffs/<before>..<after>`); omitted = page shows nothing useful
+    pageDiffs?: { before: string; after: string };
+}
+
 export interface FakeRepo {
     // "<ref>/<path>" -> body; Buffers are served as binary
     files: { [key: string]: string | Buffer };
     // branch names GitHub would show on the page (needed to disambiguate refs containing slashes)
     refNames?: string[];
-    pulls?: { [number: number]: { base: string; head: string; mergeBase: string; files: { filename: string; status: string; previous_filename?: string }[] } };
+    pulls?: { [number: number]: FakePull };
 }
 
 export const test = base.extend<{ context: BrowserContext; extensionId: string }>({
@@ -39,7 +48,9 @@ export const test = base.extend<{ context: BrowserContext; extensionId: string }
     }
 });
 
-const NEW_LAYOUT_PR = (files: string[]) => `<!doctype html><html data-color-mode="light"><body>
+const NEW_LAYOUT_PR = (owner: string, repo: string, files: string[], diffs?: { before: string; after: string }) => `<!doctype html><html data-color-mode="light"><body>
+${diffs ? `<script>fetch("/${owner}/${repo}/diffs/${diffs.before}..${diffs.after}?base_sha=${diffs.before}&whitespace_ignored=false", { method: "POST" });</script>
+<a href="/${owner}/${repo}/blob/${diffs.after}/${files[0] ?? "x.html"}">View file</a>` : ""}
 ${files.map(file => `<section class="file-card"><h3>${file}</h3><div><button data-file-path="${file}">Expand</button></div>
 <table role="grid" aria-label="Diff for: ${file}"><tbody><tr><td>diff</td></tr></tbody></table></section>`).join("\n")}
 </body></html>`;
@@ -65,12 +76,23 @@ export const fakeGithub = async (context: BrowserContext, repo: FakeRepo, owner 
             const type = Buffer.isBuffer(body) ? "image/png" : "text/plain; charset=utf-8";
             return route.fulfill({ status: 200, contentType: type, body });
         }
+        if (url.pathname.startsWith(`/${owner}/${name}/diffs/`)) return route.fulfill({ status: 200, contentType: "text/html", body: "" });
+        const unified = new RegExp(`^/${owner}/${name}/compare/[0-9a-f]+\\.\\.[0-9a-f]+\\.diff$`).exec(url.pathname);
+        if (unified) {
+            const files = Object.values(repo.pulls ?? {})[0]?.files ?? [];
+            const text = files.map(file => [
+                `diff --git a/${file.previous_filename ?? file.filename} b/${file.filename}`,
+                ...(file.status === "added" ? ["new file mode 100644"] : file.status === "removed" ? ["deleted file mode 100644"] : file.status === "renamed" ? ["similarity index 90%", `rename from ${file.previous_filename}`, `rename to ${file.filename}`] : []),
+                "--- a/x", "+++ b/x", "@@ -1 +1 @@", "-a", "+b"
+            ].join("\n")).join("\n");
+            return route.fulfill({ status: 200, contentType: "text/plain; charset=utf-8", body: text + "\n" });
+        }
         const blob = new RegExp(`^/${owner}/${name}/blob/(.+)$`).exec(url.pathname);
         if (blob) return route.fulfill({ status: 200, contentType: "text/html", body: BLOB_PAGE(owner, name, decodeURIComponent(blob[1]), repo.refNames?.find(ref => decodeURIComponent(blob[1]).startsWith(ref + "/"))) });
-        const pull = new RegExp(`^/${owner}/${name}/pull/(\\d+)/(files|changes)`).exec(url.pathname);
+        const pull = new RegExp(`^/${owner}/${name}/pull/(\\d+)/(files|changes|commits)`).exec(url.pathname);
         if (pull) {
             const info = repo.pulls?.[Number(pull[1])];
-            return route.fulfill({ status: 200, contentType: "text/html", body: NEW_LAYOUT_PR((info?.files ?? []).map(file => file.filename)) });
+            return route.fulfill({ status: 200, contentType: "text/html", body: NEW_LAYOUT_PR(owner, name, (info?.files ?? []).map(file => file.filename), info?.pageDiffs) });
         }
         return route.fulfill({ status: 404, body: "" });
     });

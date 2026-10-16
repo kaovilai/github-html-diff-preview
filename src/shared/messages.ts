@@ -19,10 +19,11 @@ export type Request =
     | ({ type: "file-text" } & FileRef)
     | ({ type: "asset" } & FileRef)
     | ({ type: "pr-info" } & PrInfoRequest)
+    | { type: "pr-file-entry"; owner: string; repo: string; before: string; after: string; path: string }
     | { type: "probe"; url: string }
     | { type: "open-preview"; owner: string; repo: string; rest: string; ref?: string };
 
-export type Response<T> = { ok: true; data: T } | { ok: false; error: string };
+export type Response<T> = { ok: true; data: T } | { ok: false; error: string; status?: number };
 
 export interface ResolvedBlob {
     ref: string;
@@ -46,6 +47,6 @@ export type ProbeOutcome = { strategy: string; ok: boolean; detail: string };
 export const send = async <T>(request: Request): Promise<T> => {
     const response: Response<T> | undefined = await chrome.runtime.sendMessage(request);
     if (!response) throw new Error("No response from the extension background worker.");
-    if (!response.ok) throw new Error(response.error);
+    if (!response.ok) throw Object.assign(new Error(response.error), { status: response.status });
     return response.data;
 }

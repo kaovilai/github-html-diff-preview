@@ -14,7 +14,7 @@ const required = (name: string): string => {
 
 const run = async () => {
     if (params.get("kind") === "pr") {
-        await runDiff({ owner: required("owner"), repo: required("repo"), pr: Number(required("pr")), path: required("path"), range: params.get("range") || undefined });
+        await runDiff({ owner: required("owner"), repo: required("repo"), pr: Number(required("pr")), path: required("path"), range: params.get("range") || undefined, before: params.get("before") || undefined, after: params.get("after") || undefined });
     } else if (params.get("kind") === "blob") {
         await runBlob({ owner: required("owner"), repo: required("repo"), rest: required("rest"), ref: params.get("ref") || undefined });
     } else {

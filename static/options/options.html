@@ -22,13 +22,13 @@
             <p class="hint">
                 <strong>Browser login</strong> reuses the GitHub session already in this browser, so private repositories
                 work without storing anything. File content and images/fonts/CSS use this.
-                <strong>Pull request diffs</strong> need GitHub's API, which a browser login cannot access, so private-repository
-                diffs need a token below.
+                <strong>Pull request diffs</strong> normally need nothing more: the compared commits are read from the GitHub
+                page itself. A token below is only a fallback, for when the page does not expose them.
             </p>
         </section>
 
         <section>
-            <h2>Personal access token (optional)</h2>
+            <h2>Personal access token (optional fallback)</h2>
             <label for="token">Token</label>
             <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
             <p class="hint">

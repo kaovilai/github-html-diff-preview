@@ -7,8 +7,9 @@
 //   token     api.github.com contents API with the user's personal access token.
 //   anonymous api.github.com contents API without credentials (public repositories, 60 requests/hour).
 
-import { assertRef, assertRepo, assertRepoPath, encodePath } from "./github-urls";
-import type { FileRef, ProbeOutcome } from "../shared/messages";
+import { findDiffEntry } from "./diff-entry";
+import { assertRef, assertRepo, assertRepoPath, assertValid, encodePath, isSha } from "./github-urls";
+import type { FileChange, FileRef, ProbeOutcome } from "../shared/messages";
 import type { AuthMode, Settings } from "./settings";
 
 export type Strategy = "session" | "token" | "anonymous";
@@ -37,6 +38,10 @@ const ORDER: { [mode in AuthMode]: Strategy[] } = {
     token: ["token"],
     anonymous: ["anonymous"]
 };
+
+// credentials were attached, so make sure nothing steered us somewhere else or to a sign-in page
+const isSessionRedirect = (finalUrl: URL): boolean =>
+    !SESSION_HOSTS.has(finalUrl.hostname) || finalUrl.pathname === "/login" || finalUrl.pathname.startsWith("/session");
 
 const readLimited = async (response: Response, maxBytes: number): Promise<Uint8Array> => {
     const declared = Number(response.headers.get("content-length"));
@@ -99,9 +104,8 @@ export class FileFetcher {
         const url = `${GITHUB}/${encodeURIComponent(file.owner)}/${encodeURIComponent(file.repo)}/raw/${encodePath(file.ref)}/${encodePath(file.path)}`;
         const response = await this.deps.fetch(url, { credentials: "include", redirect: "follow" });
 
-        // credentials were attached, so make sure nothing steered us somewhere else
         const finalUrl = new URL(response.url || url);
-        if (!SESSION_HOSTS.has(finalUrl.hostname) || finalUrl.pathname === "/login" || finalUrl.pathname.startsWith("/session")) {
+        if (isSessionRedirect(finalUrl)) {
             throw new FetchError("Not signed in to GitHub in this browser.", 401);
         }
         if (!response.ok) {
@@ -159,6 +163,28 @@ export class FileFetcher {
             }
         }
         throw new FetchError(this.describe(status, failures), status);
+    }
+
+    // Status of one file in the diff between two commits, from github.com's own `.diff` view (browser login, no API).
+    // Resolves to null whenever it cannot tell; the caller then infers the status from which side has the file.
+    async fetchDiffEntry(owner: string, repo: string, before: string, after: string, path: string): Promise<FileChange | null> {
+        assertRepo(owner, repo);
+        assertValid(isSha(before) && isSha(after), "commit");
+        assertRepoPath(path);
+        try {
+            this.checkBackoff("session");
+            const url = `${GITHUB}/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/compare/${before}..${after}.diff`;
+            const response = await this.deps.fetch(url, { credentials: "include", redirect: "follow" });
+            const finalUrl = new URL(response.url || url);
+            if (!response.ok) {
+                this.noteRateLimit("session", response);
+                return null;
+            }
+            if (isSessionRedirect(finalUrl) || finalUrl.hostname !== "github.com" || !response.body) return null;
+            return await findDiffEntry(response.body, path);
+        } catch {
+            return null;
+        }
     }
 
     async fetchText(file: FileRef, maxBytes = DEFAULT_MAX_BYTES): Promise<string> {

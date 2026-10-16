@@ -2,6 +2,7 @@
 
 import { HTML_FILE, parsePrPath, type PrLocation } from "../core/github-urls";
 import { viewerUrl } from "../shared/viewer-url";
+import { waitForDiffShas } from "./pr-shas";
 import { BUTTON_CSS, isDarkTheme, styled } from "./dom";
 
 const NEW_DIFF_LABEL = "Diff for: ";
@@ -93,8 +94,13 @@ const createPanel = (ctx: PrContext, path: string, key: string, onClose: () => v
     bar.append(title, fullscreen, close);
 
     const frame = styled("iframe", "flex:1;width:100%;border:0");
-    frame.src = viewerUrl({ kind: "pr", owner: ctx.owner, repo: ctx.repo, pr: ctx.pr, path, range: ctx.range, theme: isDarkTheme() ? "dark" : "light" });
     frame.title = `HTML diff preview of ${path}`;
+    // the commits the page is showing, when it tells us (no REST API needed); otherwise the viewer asks the API
+    void waitForDiffShas(ctx).then(shas => {
+        // the panel may have been closed, or dropped by a GitHub re-render, while we waited
+        if (!panel.isConnected) return;
+        frame.src = viewerUrl({ kind: "pr", owner: ctx.owner, repo: ctx.repo, pr: ctx.pr, path, range: ctx.range, before: shas?.before, after: shas?.after, theme: isDarkTheme() ? "dark" : "light" });
+    });
 
     const normalCss = panel.style.cssText;
     const setFullscreen = (on: boolean) => {

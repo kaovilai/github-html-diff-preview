@@ -42,12 +42,16 @@ Then open `chrome://extensions`, enable *Developer mode*, choose *Load unpacked*
 
 ## Private repositories
 
-| What | How it is fetched | Needs a token? |
+Nothing needs a token in the normal case, because everything is either already on the page or available to your GitHub login:
+
+| What | Where it comes from | Needs a token? |
 | --- | --- | --- |
 | The file, its stylesheets, images and fonts | `https://github.com/<owner>/<repo>/raw/<ref>/<path>` using your browser's github.com login (GitHub redirects to `raw.githubusercontent.com` with a short-lived token for private repositories) | No |
-| Pull request metadata (which files changed, merge base, head commit) | GitHub REST API | Yes, for private repositories |
+| Which two commits a pull request diff compares (merge base and head, or the chosen range/commit) | The page itself: GitHub's diff view requests `/<owner>/<repo>/diffs/<before>..<after>` when it loads, and the extension reads that address from the page's resource timing. It only trusts it when the page agrees (a file link at that commit, or the commit/range in the address). | No |
+| Whether the file was added, deleted or renamed | `https://github.com/<owner>/<repo>/compare/<before>..<after>.diff`, again with your login (read only as far as the file's header) | No |
+| Fallback: the same information from the REST API | Only used when the page does not expose the commits (for example, GitHub changed its page, or the diff request had not finished and the wait timed out) | Yes, for private repositories |
 
-A browser login cannot authenticate against `api.github.com`, so private-repository **pull request diffs** need a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) with read-only *Contents* and *Pull requests* access to the repository. Add it in the extension's options page. It is stored in `chrome.storage.local` on your machine and only ever sent to `api.github.com`. The options page also has a **Test access** tool that tries each method for a file URL and shows which ones work.
+For that fallback, add a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) with read-only *Contents* and *Pull requests* access to the repository on the options page. It is stored in `chrome.storage.local` on your machine and only ever sent to `api.github.com`. The options page also has a **Test access** tool that tries each file-fetching method for a file URL and shows which ones work.
 
 Organization SSO, IP allow-lists and enterprise policies still apply. GitHub Enterprise Server hosts are not supported.
 
@@ -62,7 +66,7 @@ No data leaves your browser except requests to GitHub (`github.com`, `api.github
 | `storage` | Remember your view mode, access mode and optional token, locally. |
 | `contextMenus` | The "Preview HTML file" right-click entry. |
 | `https://github.com/*` | Add the Preview buttons to GitHub pages; fetch files with your existing GitHub login. |
-| `https://api.github.com/*` | Pull request file lists and commits; file fallback with a token or anonymously. |
+| `https://api.github.com/*` | Fallback only: pull request metadata and file contents through the REST API when the page does not expose them or a token is configured. |
 | `https://raw.githubusercontent.com/*` | Where GitHub redirects `…/raw/…` downloads (required for private repositories). |
 
 There is no `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_urls>` permission. The preview page is web-accessible to `https://github.com/*` only, so the in-page diff panel can embed it.
@@ -70,14 +74,15 @@ There is no `tabs`, `scripting`, `identity`, `cookies`, `webRequest` or `<all_ur
 ## How it works
 
 1. A content script adds the buttons (GitHub is a single-page app, so it watches for page changes).
-2. The viewer page (an extension page) asks the background worker for file contents. Only the extension's own pages can: the worker rejects requests from anything else, and validates owner, repo, ref and path before building any URL.
+2. The viewer page (an extension page) asks the background worker for file contents (and, for a pull request, the compared commits are passed along from the page). Only the extension's own pages can: the worker rejects requests from anything else, and validates owner, repo, ref and path before building any URL.
 3. The HTML is parsed with `DOMParser` (never inserted into a live page), stripped of anything that can execute (`<script>`, `on*` handlers, `javascript:` URLs, `<object>`, `<embed>`, `srcdoc` frames, `<base>`, meta refresh), and its relative stylesheets and assets are inlined.
 4. The document is rendered in a `sandbox` iframe without `allow-scripts`.
 5. For diffs, both sides are compared as DOM trees (so formatting-only changes are ignored and text is compared as it renders), *then* URLs are rewritten, so an unchanged `<img src="logo.png">` is never reported as changed just because it resolves to a different commit.
 
 ## Limitations
 
-- Private-repository PR diffs need a token (see above). Single-file previews and assets do not.
+- Reading the compared commits from GitHub's page depends on GitHub's page behaviour. If it changes, the extension falls back to the REST API (a token is needed for private repositories) and the single-file preview is unaffected.
+- A renamed file's old name is only known from the `.diff`; if that lookup fails it is shown as a new file.
 - Only `<body>` is diffed (changes confined to `<head>`, such as `<title>` or `<meta>`, are not reported). Stylesheet changes show up as the resulting visual differences, not as CSS edits.
 - Changes to an image or font *file* are not detected when its path stays the same.
 - Pages that depend on JavaScript to render are shown as their static HTML unless you opt into scripts (single file, Chrome).
