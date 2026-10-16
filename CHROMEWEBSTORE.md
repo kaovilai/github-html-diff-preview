@@ -155,7 +155,7 @@ No sign-in needed. 1) Open https://github.com/redhat-et/pricetag-metering/blob/m
 ### Known Issues / Limitations
 - Only `<body>` is diffed; changes confined to `<head>` show "No visible changes".
 - GitHub's page markup can change; the right-click entry and the shortcut do not depend on it.
-- Private repository access has been verified only against a fake GitHub in automated tests and against public repositories on github.com; confirm with a real private repository before publishing (see `store/PUBLISHING.md`).
+- Private repository access: verified 2026-10-16 in a real signed-in Chromium browser against a private repository's HTML file. The extension fetched it through the browser's GitHub sign-in (the Test access probe reported `session` OK with the file's exact size, `anonymous` 404, no token configured) and rendered it. A private-repository *pull request diff* has not been tried on a real private repository (it uses the same sign-in for the file contents and the `.diff` status, and the page for the commits).
 
 ### Rejection History
 None yet.
