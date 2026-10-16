@@ -29,8 +29,18 @@ const agreesWithPage = (ctx: PrLocation, shas: DiffShas, doc: Document): boolean
 
 export const findDiffShas = (ctx: PrLocation, doc: Document = document, entries: PerformanceEntryList = performance.getEntriesByType("resource")): DiffShas | null => {
     const pattern = entryPattern(ctx.owner, ctx.repo);
-    for (let i = entries.length - 1; i >= 0; i--) {
-        const match = pattern.exec(entries[i].name);
+    const urls = [
+        ...Array.from(entries, entry => entry.name).reverse(),
+        ...Array.from(doc.querySelectorAll<HTMLElement>("deferred-diff-lines[data-url]"), element => element.getAttribute("data-url")!)
+    ];
+    for (const url of urls) {
+        let normalized: string;
+        try {
+            normalized = new URL(url, "https://github.com").href;
+        } catch {
+            continue;
+        }
+        const match = pattern.exec(normalized);
         if (!match) continue;
         const shas = { before: match[1].toLowerCase(), after: match[2].toLowerCase() };
         if (agreesWithPage(ctx, shas, doc)) return shas;
