@@ -27,10 +27,17 @@ export interface ReportInput {
 
 const clip = (value: string, maxEncoded: number): string => {
     if (encodeURIComponent(value).length <= maxEncoded) return value;
-    // trim by whole characters (not code units) until the ellipsis fits too
-    const characters = Array.from(value);
-    while (characters.length && encodeURIComponent(characters.join("") + "…").length > maxEncoded) characters.pop();
-    return characters.join("") + "…";
+    // longest prefix of whole characters (not code units) that still fits with the ellipsis; each character encodes
+    // to at least one character, so the prefix is at most maxEncoded characters long
+    const characters = Array.from(value).slice(0, maxEncoded);
+    const fits = (count: number) => encodeURIComponent(characters.slice(0, count).join("") + "…").length <= maxEncoded;
+    let low = 0, high = characters.length;
+    while (low < high) {
+        const mid = Math.ceil((low + high) / 2);
+        if (fits(mid)) low = mid;
+        else high = mid - 1;
+    }
+    return characters.slice(0, low).join("") + "…";
 }
 
 export const issueUrl = (input: ReportInput): string => {
