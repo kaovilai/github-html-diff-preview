@@ -13,8 +13,9 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": false,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "test", "playwright.config.ts", "vitest.config.ts"]
+  "include": ["src", "test", "scripts/*.ts", "playwright.config.ts", "vitest.config.ts"]
 }

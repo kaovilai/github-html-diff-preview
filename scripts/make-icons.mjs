@@ -23,9 +23,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const browser = await chromium.launch();
     await mkdir(path.join(root, "static/icons"), { recursive: true });
     await writeFile(path.join(root, "store/icon.svg"), ICON_SVG);
+    // Chrome Web Store: the 128px icon is 96px of artwork inside 16px of transparent padding; small sizes are full bleed
     for (const size of [16, 32, 48, 128]) {
+        const art = size === 128 ? 96 : size;
         const page = await browser.newPage({ viewport: { width: size, height: size } });
-        await page.setContent(`<body style="margin:0;background:transparent">${ICON_SVG.replace('width="128" height="128"', `width="${size}" height="${size}"`)}</body>`);
+        await page.setContent(`<body style="margin:0;background:transparent;display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px">${ICON_SVG.replace('width="128" height="128"', `width="${art}" height="${art}"`)}</body>`);
         await page.screenshot({ path: path.join(root, `static/icons/${size}.png`), omitBackground: true });
         await page.close();
     }
