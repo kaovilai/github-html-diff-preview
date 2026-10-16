@@ -60,16 +60,22 @@ No data leaves your browser except read-only requests to GitHub (`github.com`, a
 
 ## Report a problem
 
-When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, and the error shown. **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Until a fixed version reaches the store, it explains how to [try the fix from source](#try-a-fix-from-source).
+When something fails, or looks wrong, **Report a problem** in the preview opens a dialog with the GitHub page address (edit or remove anything private), what went wrong, and the error shown. **Open prefilled issue on GitHub** then opens a new issue form on GitHub with that filled in. Nothing is posted from the extension: you review the form and press Submit yourself. The issue helper picks the report up, tries to reproduce it, and opens a draft fix. Store updates take days to review, so until the fixed version reaches the store it explains how to [use the fix from source](#workaround-use-a-fix-from-source) as a temporary workaround.
 
-## Try a fix from source
+## Workaround: use a fix from source
+
+GitHub changes its pages without notice, and when that breaks the extension the fix has to go through store review before it reaches everyone. Until then you can run the fixed code yourself, from source. This is a temporary workaround, not the normal way to install:
 
 ```sh
 git clone https://github.com/kaovilai/github-html-diff-preview.git
 cd github-html-diff-preview
-git fetch origin pull/<number>/head:fix && git checkout fix   # skip both to use main
+git fetch origin pull/<number>/head:fix && git checkout fix   # the draft fix linked from your issue; skip both to use main
 npm ci && npm run build:chrome
 ```
+
+Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and select `dist/chrome`. If you also have the store version installed, turn it off while the unpacked one is on (two copies add two buttons).
+
+**Once the store version includes the fix, go back to it:** remove the unpacked extension and turn the store one back on.
 
 Then open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and select `dist/chrome`.
 

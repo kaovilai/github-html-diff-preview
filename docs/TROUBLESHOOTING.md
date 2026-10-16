@@ -20,7 +20,7 @@ Start with the options page (toolbar icon, or `chrome://extensions` then *Detail
 ## A pull request diff does not load
 
 - The commits being compared are read from GitHub's own page. Reload the **Files changed** tab, wait for the diff to appear, and click Preview again.
-- If the page still does not tell the extension which commits it compares (GitHub may have changed its page), the preview says so; use **Report a problem**. The right-click entry on an `.html` file page is unaffected.
+- If the page still does not tell the extension which commits it compares (GitHub may have changed its page), the preview says so; use **Report a problem**. A fix may be available from source before the store update ships; see [Workaround: use a fix from source](../README.md#workaround-use-a-fix-from-source). The right-click entry on an `.html` file page is unaffected.
 - A message about GitHub asking for a pause means GitHub rate-limited the request; wait the stated time.
 - Only `<body>` is compared. A change that only touches `<head>` (title, meta tags) shows "No visible changes".
 

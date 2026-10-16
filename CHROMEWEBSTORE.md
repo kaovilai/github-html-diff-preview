@@ -153,7 +153,7 @@ No sign-in needed. 1) Open https://github.com/redhat-et/pricetag-metering/blob/m
 
 ### Known Issues / Limitations
 - Only `<body>` is diffed; changes confined to `<head>` show "No visible changes".
-- GitHub's page markup can change; the right-click entry and the shortcut do not depend on it.
+- GitHub's page markup can change. The extension then says what it could not read and offers "Report a problem"; the right-click entry and the shortcut do not depend on page markup. A fix can be tried from source (documented in the repository) as a temporary workaround until the store update is approved.
 - Private repository access: verified 2026-10-16 (version 0.1.0 code path, unchanged in 0.2.0) in a real signed-in Chromium browser against a private repository's HTML file: the file was read through the browser's GitHub sign-in with no token and rendered. A private-repository *pull request diff* has not been tried on a real private repository (it uses the same sign-in for the file contents and the `.diff` status, and the page for the commits).
 
 ### Rejection History

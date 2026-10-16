@@ -34,7 +34,7 @@ The [issue helper](../.github/workflows/issue-responder.md) (a GitHub Agentic Wo
 1. **Reconciles** the report: which form, whether the facts needed are present (it asks for what is missing), whether it matches a known cause in the [troubleshooting guide](TROUBLESHOOTING.md) or an existing issue.
 2. **Reproduces** it offline with the repository's own code: `npm run repro` runs the real sanitize/diff pipeline on your URL or HTML and reports stylesheets, assets, what is removed and what the diff finds; markup you provide for a missing button is mounted in a jsdom page and the content scripts are run against it.
 3. **Tests**: each acceptance criterion becomes a test in `test/unit/regressions/`. If a criterion already passes, it says so and shows the evidence rather than changing code.
-4. **Fixes**: when a criterion fails and the cause is a small bug in this repository, it opens a draft pull request with the failing test turned green, for a maintainer to review, and tells the reporter how to [try the fix from source](../README.md#try-a-fix-from-source) while the store version catches up.
+4. **Fixes**: when a criterion fails and the cause is a small bug in this repository, it opens a draft pull request with the failing test turned green, for a maintainer to review, and offers the reporter [a fix from source](../README.md#workaround-use-a-fix-from-source) as a temporary workaround until the store version catches up.
 
 Anything it cannot reproduce (private repositories, browser-specific behaviour, GitHub changing its page) is left for a maintainer with a summary of what was tried.
 
